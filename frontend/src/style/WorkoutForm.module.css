@@ -1,0 +1,105 @@
+.backgroundWrappers {
+  position: relative;
+  min-height: 100vh;
+  padding-top: 80px;
+  padding-bottom: 40px;
+  background-image: url('https://media.gq-magazine.co.uk/photos/67657a8e8113b47d55474865/3:2/w_1620,h_1080,c_limit/2012-homeworkout.jpg'); /* Your background image path */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.backgroundWrappers::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Adjust opacity here */
+  z-index: 0;
+}
+
+/* Ensure form content is above the background */
+.formContainer {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto; /* Center horizontally */
+  background-color: rgba(18, 18, 18, 0.95); /* semi-transparent dark bg */
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  color: #f5f5f5;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.heading {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #ffc107; /* orange-yellow heading */
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.label {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #ffdd57;
+  outline: none;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.btnSave {
+  background-color: #ffc107; /* Orange-yellow */
+  color: #000;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btnSave:hover {
+  background-color: #e6b800;
+}
+
+.btnDelete {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btnDelete:hover {
+  background-color: #c82333;
+}

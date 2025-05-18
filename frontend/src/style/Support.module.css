@@ -1,0 +1,188 @@
+.supportContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  color: #f5f5f5;
+}
+
+.supportTitle {
+  color: #ffdd57;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.supportSubtitle {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #aaa;
+}
+
+.supportGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 768px) {
+  .supportGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.contactForm, .helpResources {
+  background-color: #2a2a2a;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.contactForm h3, .helpResources h3, .commonIssues h3 {
+  color: #ffdd57;
+  margin-bottom: 20px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  width: 100%;
+  padding: 10px;
+  background-color: #1e1e1e;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.formGroup textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.submitButton {
+  background-color: #ffdd57;
+  color: #000;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  width: 100%;
+  transition: background-color 0.3s;
+}
+
+.submitButton:hover {
+  background-color: #ffd700;
+}
+
+.submitButton:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.resourceCard {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #444;
+}
+
+.resourceCard:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.resourceIcon {
+  font-size: 24px;
+  color: #ffdd57;
+  margin-top: 5px;
+}
+
+.resourceIcon i {
+  font-size: 24px;
+}
+
+.resourceCard h4 {
+  margin-bottom: 5px;
+  color: #fff;
+}
+
+.resourceCard p {
+  color: #aaa;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.resourceLink {
+  color: #ffdd57;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.resourceLink:hover {
+  text-decoration: underline;
+}
+
+.commonIssues {
+  background-color: #2a2a2a;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  margin-top: 20px;
+}
+
+.issueAccordion {
+  margin-top: 15px;
+}
+
+.issueItem {
+  margin-bottom: 10px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.issueItem summary {
+  padding: 15px;
+  background-color: #1e1e1e;
+  cursor: pointer;
+  font-weight: 500;
+  list-style: none;
+  position: relative;
+}
+
+.issueItem summary::-webkit-details-marker {
+  display: none;
+}
+
+.issueItem summary:after {
+  content: '+';
+  position: absolute;
+  right: 15px;
+  font-size: 18px;
+  transition: transform 0.2s;
+}
+
+.issueItem[open] summary:after {
+  transform: rotate(45deg);
+}
+
+.issueContent {
+  padding: 15px;
+  background-color: #252525;
+  color: #ddd;
+  font-size: 14px;
+  line-height: 1.6;
+}
