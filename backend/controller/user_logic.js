@@ -1,10 +1,20 @@
 let user = require("../collection/User");
 let b = require("bcrypt");
+let nodemailer = require("nodemailer")
 
 // 🆕 Import the models
 const Workout = require("../Models/Workout");
 const FoodLog = require("../Models/FoodLog");
 const Progress = require("../Models/Progress");
+let jwt = require("jsonwebtoken")
+
+let EmailInfo = nodemailer.createTransport({
+  service:"gmail",
+  auth:{
+    user:process.env.EMAIL,
+        pass:process.env.PASS_KEY
+  }
+})
 
 let user_function = {
   // -------- USER ROUTES --------
@@ -229,13 +239,13 @@ let user_function = {
   },
 
   // -------- PROGRESS ROUTES --------
-  addProgress: async (req, res) => {
+   addProgress : async (req, res) => {
     try {
-      const { userId, weight, bodyFat, chest, waist, hips } = req.body;
-      const newProgress = new Progress({ userId, weight, bodyFat, chest, waist, hips });
-      await newProgress.save();
-      res.status(201).json({ msg: "Progress saved", data: newProgress });
+      const newProgress = new Progress(req.body);
+      await newProgress.save(); // No callback needed
+      res.status(201).json(newProgress);
     } catch (err) {
+      console.error("Add progress error:", err);
       res.status(500).json({ msg: err.message });
     }
   },
@@ -297,7 +307,28 @@ let user_function = {
     } catch (error) {
       res.status(501).json({msg:error.message});
     }
-  }
+  },
+  
+  reset_pswd : async function(req,res){
+    try {
+        let {token} = req.params;
+        let {password} = req.body;
+
+        let token_decode = jwt.decode(token, process.env.JWT_KEY);
+        if (!token_decode) {
+            res.status(404).json({msg : "Something Went Wrong"})                  
+        }
+        let encpswd = bcrypt.hashSync(password,13);
+        await user.findByIdAndUpdate(token_decode.id,{password:encpswd})
+      res.status(200).json({msg : "Password Reset Successfully"})        
+
+
+    } catch (error) {
+      res.status(501).json({msg : error.message})        
+        
+    }
+}
+  
 }
   
 

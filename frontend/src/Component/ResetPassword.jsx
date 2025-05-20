@@ -1,53 +1,46 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+import React, { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 export default function ResetPassword() {
-  const { token } = useParams();
-  const navigate = useNavigate();
-
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
-
-  const handleReset = async () => {
-    if (password !== confirmPassword) {
-      setMessage("Passwords don't match");
-      return;
+    let [pswd, setPswd] = useState("")
+    let [cpswd, setCPswd] = useState("")
+    let {token} = useParams();
+    let na  =useNavigate()
+    async function rP(){
+      try {
+        if (pswd === cpswd) {
+            await axios.post(`http://localhost:3002/web/resetpswd/${token}`,{
+                password:pswd
+            }).then((a)=>{
+                toast(a.data.msg)
+                console.log("Password Updated")
+                na("/log")
+            })
+        } else {
+            toast.error("Password And Confirm Password Don't Match")
+        }
+      } catch (error) {
+        toast.error(error.response.data.msg)
+      }
     }
 
-    try {
-      const res = await axios.post('http://localhost:3001/gym/reset-password', {
-        token,
-        password,
-      });
-
-      setMessage(res.data.msg);
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
-    } catch (err) {
-      setMessage(err.response?.data?.msg || "Error resetting password");
-    }
-  };
-
+   
   return (
-    <div>
-      <h2>Reset Password</h2>
-      <input 
-        type="password" 
-        placeholder="New Password" 
-        value={password} 
-        onChange={e => setPassword(e.target.value)} 
-      />
-      <input 
-        type="password" 
-        placeholder="Confirm Password" 
-        value={confirmPassword} 
-        onChange={e => setConfirmPassword(e.target.value)} 
-      />
-      <button onClick={handleReset}>Reset Password</button>
-      <p>{message}</p>
+    <div className='container'> <h2>Reset  Password</h2><hr />
+<ToastContainer />
+    <p>enter your Password</p>
+    <input type="password" placeholder='enter Password' className='form-control my-2' value={pswd}
+        onChange={(e) => setPswd(e.target.value)} />
+
+<p>Confirm Password</p>
+    <input type="password" placeholder='Confirm Password' className='form-control my-2' value={cpswd}
+        onChange={(e) => setCPswd(e.target.value)} />
+
+    <button className='btn btn-primary my-2' onClick={rP}>Reset Password</button>
+
+
     </div>
-  );
+  )
 }

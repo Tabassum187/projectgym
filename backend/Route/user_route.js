@@ -33,5 +33,5 @@ r.get("/progress", user_logic.getProgress);       // get all progress records
 r.post("/progress", user_logic.addProgress);      // add new progress
 r.put("/progress/:id", user_logic.updateProgress); // update progress
 r.delete("/progress/:id", user_logic.deleteProgress); // delete progress
-
+r.post("/resetpswd/:token",user_logic.reset_pswd    )
 module.exports = r;
