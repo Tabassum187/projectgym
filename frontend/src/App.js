@@ -18,6 +18,8 @@ import ForgetPassword from './Component/ForgetPassword';
 import ResetPassword from './Component/ResetPassword';
 import Goals from './Component/Goals';
 import ReminderForm from './Component/ReminderForm';
+import Profile from './Component/Profile';
+import Notifications from './Component/Notifications';
 
 
 // ProtectedRoute component
@@ -62,6 +64,8 @@ function App() {
           <Route path='/reset' element={<ResetPassword />} />
           <Route path='/goals' element={<Goals />} />
            <Route path='/reminder' element={<ReminderForm />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/notifications" element={<Notifications />} />
         </Routes>
       </div>
     </BrowserRouter>

@@ -1,7 +1,7 @@
 let user = require("../collection/User");
 let b = require("bcrypt");
 let nodemailer = require("nodemailer")
-
+const Notification = require("../Models/notificationSchema");
 // 🆕 Import the models
 const Workout = require("../Models/Workout");
 const FoodLog = require("../Models/FoodLog");
@@ -327,7 +327,39 @@ let user_function = {
       res.status(501).json({msg : error.message})        
         
     }
+},
+// Assuming Express and MongoDB
+// app.put("/gym/user/:id", async (req, res) => {
+//   try {
+//     const userId = req.params.id;
+//     const updated = await User.findByIdAndUpdate(userId, req.body, { new: true });
+//     if (!updated) return res.status(404).json({ msg: "User not found" });
+//     res.json({ msg: "Profile updated", data: updated });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ msg: "Server error" });
+//   }
+// });
+getNotifications: async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+    res.json(notifications);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+},
+
+markNotificationRead: async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Notification.findByIdAndUpdate(id, { isRead: true });
+    res.json({ msg: "Notification marked as read" });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
 }
+
   
 }
   

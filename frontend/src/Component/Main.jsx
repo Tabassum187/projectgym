@@ -92,8 +92,10 @@ export default function Main() {
       <Link to="/reg" className="btn btn-success">Register</Link>
     </>
   ) : (
+
+    
     <Link
-      to="/getuser"
+      to="/profile"
       className="text-white text-decoration-none d-flex align-items-center mr-3"
       style={{ cursor: 'pointer' }}
       title="View Profile"
@@ -165,7 +167,7 @@ export default function Main() {
       </li>
 
       <li className="nav-item">
-        <Link className="nav-link text-white" to="/getuser">
+        <Link className="nav-link text-white" to="/profile">
           <span className="menu-title">👤 Profile</span>
         </Link>
       </li>
