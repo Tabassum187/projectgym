@@ -20,6 +20,8 @@ import Goals from './Component/Goals';
 import ReminderForm from './Component/ReminderForm';
 import Profile from './Component/Profile';
 import Notifications from './Component/Notifications';
+import ProgressList from './Component/ProgressList';
+
 
 
 // ProtectedRoute component
@@ -54,6 +56,7 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/dashboard' element={<Main />} />
           <Route path='/pro' element={<ProgressForm />} />
+          <Route path='/progresslist' element={<ProgressList />} />
           <Route path='/work' element={<WorkoutForm />} />
           <Route path='/food' element={<FoodForm />} />
           <Route path='/foodlist' element={<FoodList />} />

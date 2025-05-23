@@ -1,55 +1,72 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 
 require('dotenv').config();
 
+const supportRoutes = require('./routes/support');       // adjust path as per your project
+const progressRoutes = require('./routes/progressRoutes');
+const foodRoutes = require('./routes/foodRoutes');
+const reminderRoutes = require('./routes/reminderRoutes');
 
 
 const app = express();
 const port = process.env.PORT || 3001;
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+  cors: {
+    origin: 'http://localhost:3000',
+    credentials: true,
+  }
+});
 
+// ✅ CORS Configuration
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
 
-// Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes
-const foodRoutes = require('./routes/foodRoutes');
-const progressRoutes = require('./routes/progressRoutes');
+app.use('/api/support', supportRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/food', foodRoutes);
+app.use('/api/reminders', reminderRoutes);
 
-// Use Routes
-app.use('/gym', foodRoutes);
-app.use('/gym', progressRoutes);
 
-// MongoDB connection
+// ✅ MongoDB connection
 const uri = process.env.MONGO_URI;
-
 if (!uri) {
   console.error("❌ MONGO_URI not set in .env file");
-  process.exit(1); // Stop the server if no DB URI
+  process.exit(1);
 }
 
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-  .then(() => {
-    console.log("✅ Connected to MongoDB");
-    app.listen(port, () => console.log(`🚀 Server running on http://localhost:${port}`));
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
+.then(() => {
+  console.log("✅ Connected to MongoDB");
+
+  // Start server only after DB connection
+  server.listen(port, () => {
+    console.log(`🚀 Server running on http://localhost:${port}`);
   });
+})
+.catch(err => {
+  console.error("❌ MongoDB connection error:", err);
+});
+
+// ✅ Socket.io setup
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  // Emit a test notification
   socket.emit('notification', {
     message: 'Welcome to FitTrack Pro!',
     timestamp: new Date(),
@@ -58,8 +75,4 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
-});
-
-server.listen(3001, () => {
-  console.log('Server running on http://localhost:3001');
 });

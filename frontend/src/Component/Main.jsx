@@ -471,21 +471,22 @@ export default function Main() {
 
 
             
-            {/* Footer */}
-      <footer className="footer bg-dark py-3">
+{/* Footer */}
+<footer className="footer bg-dark py-4 mt-auto">
   <div className="container">
-    <div className="d-sm-flex justify-content-center justify-content-sm-between">
-      <span className="text-light d-block text-center text-sm-left d-sm-inline-block">
-        © FitTrackPro 2025
+    <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center">
+      <span className="text-light text-center mb-2 mb-sm-0">
+        © {new Date().getFullYear()} <strong>FitTrackPro</strong>. All rights reserved.
       </span>
-      <span className="float-none float-sm-right d-block mt-2 mt-sm-0 text-center">
-        <Link to="/terms" className="text-light mx-2">Terms</Link>
-        <Link to="/privacy" className="text-light mx-2">Privacy</Link>
-        <Link to="/contact" className="text-light mx-2">Contact</Link>
-      </span>
+      <div className="footer-links text-center">
+        <Link to="/settings" className="text-light mx-3 text-decoration-none">⚙️ Settings</Link>
+        <Link to="/privacy" className="text-light mx-3 text-decoration-none">🔐 Privacy</Link>
+        <Link to="/support" className="text-light mx-3 text-decoration-none">📞 Contact</Link>
+      </div>
     </div>
   </div>
 </footer>
+
 
           </div>
         </div>
