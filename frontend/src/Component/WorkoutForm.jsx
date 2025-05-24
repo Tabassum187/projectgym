@@ -88,7 +88,7 @@ export default function WorkoutForm({ workout = null, userId, onSave }) {
       <div className="container-scroller">
         <nav className="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex align-items-center justify-content-between" style={{ backgroundColor: "#121212" }}>
           <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-            <Link className="navbar-brand brand-logo" to="/" style={{ color: "yellow", fontSize: "30px", fontWeight: "bold", textDecoration: "none" }}>
+            <Link className="navbar-brand brand-logo" to="/dashboard" style={{ color: "yellow", fontSize: "30px", fontWeight: "bold", textDecoration: "none" }}>
               <span className="text-warning">🏋️‍♀️FitTrack</span>Pro💪
             </Link>
           </div>

@@ -108,6 +108,24 @@ export default function Login() {
   </Link>
 </p>
 
+<div style={{ textAlign: "center" }}>
+  <Link to="/" style={{ textDecoration: "none" }}>
+    <button
+      style={{
+        padding: "5px 10px",
+        backgroundColor: "white",
+        color: "black",
+        fontSize: "1rem",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
+      }}
+    >
+      Go to Main Page
+    </button>
+  </Link>
+</div>
+
       </div>
     </div>
   );

@@ -46,13 +46,11 @@ export default function Main() {
 >
   {/* Logo and Brand */}
   <div className="d-flex align-items-center pl-3">
-    <Link
-      className="navbar-brand brand-logo"
-      to="/"
-      style={{ color: "yellow", fontSize: "26px", fontWeight: "bold", textDecoration: "none" }}
-    >
-      <span className="text-warning">  🏋️‍♀️FitTrack</span>Pro💪
-    </Link>
+             <a className="navbar-brand" href="/dashboard" style={{ fontWeight: 'bold' }}>
+            <h2 className="text-white text-capitalize m-0">
+              <i />FitTrack<span style={{ color: '#FFD700' }}>Pro</span>
+            </h2>
+          </a>
   </div>
 
   {/* Navbar Items */}

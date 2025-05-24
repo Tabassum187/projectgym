@@ -21,6 +21,11 @@ import ReminderForm from './Component/ReminderForm';
 import Profile from './Component/Profile';
 import Notifications from './Component/Notifications';
 import ProgressList from './Component/ProgressList';
+import User from './Component/Outlet/User';
+
+
+
+
 
 
 
@@ -40,7 +45,9 @@ function App() {
     <BrowserRouter>
       <div className="App">
         <Routes>
-          <Route path='/' element={<Main />} />
+          <Route path='/' element={<User />} />
+  
+          <Route path='dashboard' element={<Main />} />
           <Route path='/reg' element={<Rigester />} />
 
           {/* Protect ShowUser route */}
