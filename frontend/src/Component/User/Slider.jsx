@@ -1,15 +1,31 @@
 import React from 'react';
 
 const Slider = () => {
+  const backgroundImageUrl = 'https://img.freepik.com/premium-photo/photo-fitness-man-woman-workout-gym_763111-22742.jpg'; // Replace with your actual image URL
+
   return (
     <>
-      <section className="slider d-flex align-items-center" style={{ minHeight: '100vh' }}>
+      <section
+        className="slider d-flex align-items-center"
+        style={{
+          minHeight: '100vh',
+         backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.02)), url(${backgroundImageUrl})`,
+
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         <div className="container">
           <div className="row justify-content-center text-center">
             <div className="col-md-8">
               <span
                 className="h6 d-inline-block mb-3 text-uppercase"
-                style={{ color: '#FFD700', letterSpacing: '1px', fontSize: '1.1rem' }}
+                style={{
+                  color: '#FFD700',
+                  letterSpacing: '1px',
+                  fontSize: '1.1rem',
+                }}
               >
                 Your Fitness Journey Starts Here
               </span>
@@ -18,7 +34,8 @@ const Slider = () => {
                 className="text-uppercase text-white mb-4"
                 style={{ fontWeight: 'bold', fontSize: '3.6rem' }}
               >
-                Step Up Your <span style={{ color: '#FFD700' }}>Fitness Challenge</span><br />
+                Step Up Your <span style={{ color: '#FFD700' }}>Fitness Challenge</span>
+                <br />
                 With Us
               </h1>
 

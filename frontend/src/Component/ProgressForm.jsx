@@ -5,6 +5,7 @@ import '../style/ProgressForm.module.css';
 import "react-toastify/dist/ReactToastify.css";
 
 const ProgressForm = ({ handleLogout, user }) => {
+  
   const [formData, setFormData] = useState({
     weight: '',
     measurements: '',
@@ -276,3 +277,6 @@ const ProgressForm = ({ handleLogout, user }) => {
 };
 
 export default ProgressForm;
+
+
+

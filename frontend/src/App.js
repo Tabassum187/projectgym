@@ -22,6 +22,7 @@ import Profile from './Component/Profile';
 import Notifications from './Component/Notifications';
 import ProgressList from './Component/ProgressList';
 import User from './Component/Outlet/User';
+import Adminget from './Component/Adminget';
 
 
 
@@ -62,6 +63,8 @@ function App() {
 
           <Route path='/login' element={<Login />} />
           <Route path='/dashboard' element={<Main />} />
+            <Route path='/adminget' element={<Adminget />} />
+              <Route path='/getuser' element={<ShowUser />} />
           <Route path='/pro' element={<ProgressForm />} />
           <Route path='/progresslist' element={<ProgressList />} />
           <Route path='/work' element={<WorkoutForm />} />
