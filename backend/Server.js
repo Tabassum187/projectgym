@@ -10,6 +10,7 @@ const supportRoutes = require('./routes/support');       // adjust path as per y
 const progressRoutes = require('./routes/progressRoutes');
 const foodRoutes = require('./routes/foodRoutes');
 const reminderRoutes = require('./routes/reminderRoutes');
+const workoutRoute = require('./routes/workout_route'); 
 
 
 const app = express();
@@ -36,9 +37,9 @@ app.use(express.json());
 // Routes
 app.use('/api/support', supportRoutes);
 app.use('/api/progress', progressRoutes);
-app.use('/api/food', foodRoutes);
+app.use('/gym', foodRoutes);
 app.use('/api/reminders', reminderRoutes);
-
+app.use('/gym', workoutRoute);  // If you want all gym routes under /gym
 
 // ✅ MongoDB connection
 const uri = process.env.MONGO_URI;

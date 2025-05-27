@@ -28,7 +28,7 @@ export default function Login() {
 
       navigate('/dashboard');
     } catch (error) {
-      toast.error("Login failed. Please check your credentials.");
+      toast.error(error.response?.data.msg);
     }
   }
 

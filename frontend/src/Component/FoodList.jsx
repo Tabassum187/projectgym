@@ -1,39 +1,618 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import FoodItem from './FoodItem'; // Separate file for individual food cards
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom';
+import styles from '../style/FoodList.module.css';
 
-const FoodList = ({ userId }) => {
+// Helpers
+function getStartOfWeek(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - day);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function formatDate(date) {
+  const d = new Date(date);
+  return d.toISOString().substring(0, 10);
+}
+
+const FoodList = () => {
   const [foodLogs, setFoodLogs] = useState([]);
+  const [editItem, setEditItem] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    mealType: '',
+    quantity: '',
+    calories: '',
+    protein: '',
+    carbs: '',
+    fat: '',
+    date: ''
+  });
+  const [showPopup, setShowPopup] = useState(false);
+  const [searchName, setSearchName] = useState('');
+  const [searchMealType, setSearchMealType] = useState('');
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const userName = localStorage.getItem('userName') || 'User';
 
   useEffect(() => {
-    const fetchFoods = async () => {
-      try {
-        const res = await axios.get(`http://localhost:3001/gym/foods?userId=${userId}`);
-        setFoodLogs(res.data);
-      } catch (error) {
-        console.error("Error fetching food logs:", error);
-        toast.error("Failed to fetch food logs.");
-      }
-    };
+    fetchFoodLogs();
+  }, []);
 
-    if (userId) fetchFoods();
-  }, [userId]);
+  const fetchFoodLogs = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/gym/foods');
+      setFoodLogs(res.data);
+    } catch (error) {
+      console.error("Error fetching food logs:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Delete this food log?')) {
+      try {
+        await axios.delete(`http://localhost:3001/gym/foods/${id}`);
+        fetchFoodLogs();
+      } catch (error) {
+        console.error("Delete failed:", error);
+      }
+    }
+  };
+
+  const openEditModal = (foodLog) => {
+    const meal = foodLog.meals[0] || {};
+    setEditItem(foodLog._id);
+    setFormData({
+      name: meal.name || '',
+      mealType: meal.mealType || '',
+      quantity: meal.quantity || '',
+      calories: meal.calories || '',
+      protein: meal.protein || '',
+      carbs: meal.carbs || '',
+      fat: meal.fat || '',
+      date: foodLog.date ? foodLog.date.substring(0, 10) : ''
+    });
+    setShowPopup(true);
+  };
+
+  const closeModal = () => {
+    setEditItem(null);
+    setFormData({
+      name: '',
+      mealType: '',
+      quantity: '',
+      calories: '',
+      protein: '',
+      carbs: '',
+      fat: '',
+      date: ''
+    });
+    setShowPopup(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!editItem) return;
+    const updatedData = {
+      meals: [
+        {
+          name: formData.name,
+          mealType: formData.mealType,
+          quantity: Number(formData.quantity),
+          calories: Number(formData.calories),
+          protein: Number(formData.protein),
+          carbs: Number(formData.carbs),
+          fat: Number(formData.fat),
+        }
+      ],
+      date: formData.date
+    };
+    try {
+      await axios.put(`http://localhost:3001/gym/foods/${editItem}`, updatedData);
+      closeModal();
+      fetchFoodLogs();
+    } catch (error) {
+      console.error("Update failed:", error);
+    }
+  };
+
+  const handleLogout = () => {
+    console.log('Logging out...');
+    localStorage.clear();
+  };
+
+  const filteredFoodLogs = foodLogs.filter(foodLog => {
+    const meal = foodLog.meals[0] || {};
+    const nameMatch = meal.name.toLowerCase().includes(searchName.toLowerCase());
+    const mealTypeMatch = searchMealType === '' || meal.mealType === searchMealType;
+    return nameMatch && mealTypeMatch;
+  });
+
+  const foodLogsToDisplay = selectedDate
+    ? filteredFoodLogs.filter(foodLog => {
+        const logDate = new Date(foodLog.date?.substring(0, 10));
+        return formatDate(logDate) === formatDate(selectedDate);
+      })
+    : filteredFoodLogs;
+
+  const weekStart = selectedDate ? getStartOfWeek(selectedDate) : null;
+  const weekDays = selectedDate
+    ? Array.from({ length: 7 }).map((_, i) => {
+        const d = addDays(weekStart, i);
+        return {
+          date: d,
+          formatted: d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }),
+          iso: formatDate(d)
+        };
+      })
+    : [];
 
   return (
-    <div className="container mt-4">
-      <ToastContainer />
-      <h2>Logged Meals</h2>
-      {foodLogs.length === 0 ? (
-        <p>No food logs found.</p>
-      ) : (
-        foodLogs.map((log) =>
-          log.meals?.map((meal, idx) => (
-            <FoodItem key={`${log._id}-${idx}`} food={meal} />
-          ))
-        )
-      )}
+    <div className="dark-theme">
+      <div className="container-scroller">
+        {/* Navbar */}
+        <nav className="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex align-items-center justify-content-between" style={{ backgroundColor: "#121212" }}>
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+            <Link
+              className="navbar-brand brand-logo"
+              to="/"
+              style={{ color: "yellow", fontSize: "30px", fontWeight: "bold", textDecoration: "none" }}
+            >
+              <span className="text-warning">🏋️‍♀️FitTrack</span>Pro💪
+            </Link>
+          </div>
+          <div className="navbar-menu-wrapper d-flex align-items-center justify-content-end flex-grow-0">
+            <span style={{ color: "white", marginRight: "20px" }}>👋 Hi, {userName}</span>
+            <ul className="navbar-nav navbar-nav-right d-flex align-items-center">
+              <li className="nav-item">
+                <Link className="nav-link" to="/notifications">
+                  <i className="mdi mdi-bell-outline text-white"></i>
+                  <span className="count-symbol bg-danger"></span>
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        {/* Sidebar */}
+        <div className="container-fluid page-body-wrapper">
+          <nav className="sidebar sidebar-offcanvas" id="sidebar" style={{ backgroundColor: "#121212" }}>
+            <ul className="nav">
+              <li className="nav-item section-header">
+                <span className="nav-link text-muted text-uppercase small font-weight-bold">
+                  <span className="menu-title">Main Menu</span>
+                </span>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/dashboard">
+                  <span className="menu-title">📊 Dashboard</span>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/work">
+                  <span className="menu-title">🏋️ Workouts</span>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/food">
+                  <span className="menu-title">🍎 Nutrition</span>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/foodlist">
+                  <span className="menu-title">🍎 FoodList</span>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/pro">
+                  <span className="menu-title">📈 Progress</span>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/goals">
+                  <span className="menu-title">🎯 Goals</span>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/reminder">
+                  <span className="menu-title">🚨 Reminders</span>
+                </Link>
+              </li>
+              <li className="nav-item section-header mt-3">
+                <span className="nav-link text-muted text-uppercase small font-weight-bold">
+                  <span className="menu-title">Others</span>
+                </span>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" to="/getuser">
+                  <span className="menu-title">👤 Profile</span>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/settings" className="nav-link text-white">
+                  <span className="menu-title">⚙️ Settings</span>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/support" className="nav-link text-white">
+                  <span className="menu-title">❓ Support</span>
+                </Link>
+              </li>
+              <li className="nav-item mt-3">
+                <a href="/logout" className="nav-link text-white" style={{ cursor: 'pointer' }}>
+                  <span className="menu-title">🚪 Log Out</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Main Content */}
+          <div className="main-panel" style={{ padding: '20px', marginLeft: '250px' }}>
+            <h2>Your Food Logs</h2>
+
+            {/* Search and Filters */}
+            <div
+              className={styles.searchBar}
+              style={{
+                marginBottom: '20px',
+                display: 'flex',
+                gap: '10px',
+                flexWrap: 'wrap',
+                alignItems: 'center'
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Search by name..."
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                style={{ flex: '1 1 200px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              />
+              <select
+                value={searchMealType}
+                onChange={(e) => setSearchMealType(e.target.value)}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                <option value="">All Meal Types</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+                <option value="snack">Snack</option>
+              </select>
+              <button
+                onClick={() => {
+                  setShowCalendar(!showCalendar);
+                  if (!showCalendar) setSelectedDate(new Date());
+                  else setSelectedDate(null);
+                }}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'yellow',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                {showCalendar ? 'Hide Calendar' : 'Show Calendar'}
+              </button>
+            </div>
+
+            {/* Calendar Week View */}
+            {showCalendar && selectedDate && (
+              <div
+                className={styles.weekCalendar}
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  marginBottom: '20px'
+                }}
+              >
+                {weekDays.map(day => (
+                  <div
+                    key={day.iso}
+                    onClick={() => setSelectedDate(new Date(day.iso))}
+                    style={{
+                      cursor: 'pointer',
+                      padding: '10px',
+                      backgroundColor: formatDate(selectedDate) === day.iso ? 'yellow' : 'transparent',
+                      color: formatDate(selectedDate) === day.iso ? '#121212' : 'white',
+                      borderRadius: '6px',
+                      minWidth: '70px',
+                      textAlign: 'center',
+                      userSelect: 'none',
+                      boxShadow: formatDate(selectedDate) === day.iso ? '0 0 5px #ffd600' : 'none',
+                      transition: 'background-color 0.3s, color 0.3s'
+                    }}
+                  >
+                    {day.formatted}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Food Cards Grid */}
+            <div className={styles.grid} style={{ display: 'grid', gap: '20px', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+              {foodLogsToDisplay.length > 0 ? (
+                foodLogsToDisplay.map(foodLog => {
+                  const meal = foodLog.meals[0] || {};
+                  return (
+                    <div
+                      key={foodLog._id}
+                      className={styles.card}
+                      style={{
+                        backgroundColor: '#1e1e1e',
+                        padding: '15px',
+                        borderRadius: '10px',
+                        boxShadow: '0 4px 8px rgba(0,0,0,0.5)',
+                        color: 'white',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      <p>
+                        <strong>Date: </strong>
+                        <span
+                          style={{ textDecoration: 'underline', cursor: 'pointer', color: 'lightblue' }}
+                          onClick={() => {
+                            setShowCalendar(true);
+                            setSelectedDate(new Date(foodLog.date.substring(0, 10)));
+                          }}
+                        >
+                          {foodLog.date?.substring(0, 10) || 'N/A'}
+                        </span>
+                      </p>
+                      <p><strong>Name:</strong> {meal.name}</p>
+                      <p><strong>Meal Type:</strong> {meal.mealType}</p>
+                      <p><strong>Quantity:</strong> {meal.quantity}</p>
+                      <p><strong>Calories:</strong> {meal.calories}</p>
+                      <p><strong>Protein:</strong> {meal.protein} g</p>
+                      <p><strong>Carbs:</strong> {meal.carbs} g</p>
+                      <p><strong>Fat:</strong> {meal.fat} g</p>
+
+                      <div className={styles.cardButtons} style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                        <button
+                          className={styles.editBtn}
+                          onClick={() => openEditModal(foodLog)}
+                          style={{
+                            backgroundColor: '#ffc107',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '5px 10px',
+                            cursor: 'pointer'
+                          }}
+                          aria-label="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className={styles.deleteBtn}
+                          onClick={() => handleDelete(foodLog._id)}
+                          style={{
+                            backgroundColor: '#dc3545',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '5px 10px',
+                            cursor: 'pointer',
+                            color: 'white'
+                          }}
+                          aria-label="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className={styles.emptyState} style={{ textAlign: 'center', color: 'lightgray', fontSize: '18px', marginTop: '40px' }}>
+                  <p>No food logs found. Add your first food entry!</p>
+                </div>
+              )}
+            </div>
+
+            {/* Edit Popup Modal */}
+            {showPopup && (
+              <div
+                className={styles.popup}
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  width: '100vw',
+                  height: '100vh',
+                  backgroundColor: 'rgba(0,0,0,0.7)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 9999,
+                  padding: '20px'
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#121212',
+                    borderRadius: '10px',
+                    padding: '30px',
+                    width: '100%',
+                    maxWidth: '400px',
+                    color: 'white',
+                    boxShadow: '0 0 20px rgba(255, 255, 0, 0.8)'
+                  }}
+                >
+                  <h3 style={{ marginBottom: '20px' }}>Edit Food Log</h3>
+                  <input
+                    type="date"
+                    name="date"
+                    value={formData.date}
+                    onChange={handleChange}
+                    style={{
+                      width: '100%',
+                      marginBottom: '10px',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Food Name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    style={{
+                      width: '100%',
+                      marginBottom: '10px',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <select
+                    name="mealType"
+                    value={formData.mealType}
+                    onChange={handleChange}
+                    style={{
+                      width: '100%',
+                      marginBottom: '10px',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  >
+                    <option value="">Select Meal Type</option>
+                    <option value="breakfast">Breakfast</option>
+                    <option value="lunch">Lunch</option>
+                    <option value="dinner">Dinner</option>
+                    <option value="snack">Snack</option>
+                  </select>
+                  <input
+                    type="number"
+                    name="quantity"
+                    placeholder="Quantity"
+                    value={formData.quantity}
+                    onChange={handleChange}
+                    style={{
+                      width: '100%',
+                      marginBottom: '10px',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <input
+                    type="number"
+                    name="calories"
+                    placeholder="Calories"
+                    value={formData.calories}
+                    onChange={handleChange}
+                    style={{
+                      width: '100%',
+                      marginBottom: '10px',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <input
+                    type="number"
+                    name="protein"
+                    placeholder="Protein (g)"
+                    value={formData.protein}
+                    onChange={handleChange}
+                    style={{
+                      width: '100%',
+                      marginBottom: '10px',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <input
+                    type="number"
+                    name="carbs"
+                    placeholder="Carbs (g)"
+                    value={formData.carbs}
+                    onChange={handleChange}
+                    style={{
+                      width: '100%',
+                      marginBottom: '10px',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <input
+                    type="number"
+                    name="fat"
+                    placeholder="Fat (g)"
+                    value={formData.fat}
+                    onChange={handleChange}
+                    style={{
+                      width: '100%',
+                      marginBottom: '20px',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  />
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                    <button
+                      onClick={closeModal}
+                      style={{
+                        backgroundColor: '#6c757d',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '8px 16px',
+                        cursor: 'pointer',
+                        color: 'white'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      style={{
+                        backgroundColor: 'yellow',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '8px 16px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
