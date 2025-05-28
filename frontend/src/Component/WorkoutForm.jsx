@@ -45,6 +45,10 @@ const WorkoutForm = () => {
   };
 
   return (
+
+
+
+    
     <div style={{
       backgroundImage: "url('https://plus.unsplash.com/premium_photo-167286364771f0-1f68f52f735f?w=500&auto=format&fit=crop&q=60')",
       backgroundSize: 'cover',

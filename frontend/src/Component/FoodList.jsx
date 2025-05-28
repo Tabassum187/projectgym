@@ -41,6 +41,10 @@ const FoodList = () => {
   const [searchMealType, setSearchMealType] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+   const [showWorkout, setShowWorkout] = useState(false);
+    const [showNutrition, setShowNutrition] = useState(false);
+    const [showProgress, setShowProgress] = useState(false);
+    const [showsteps, setShowsteps] = useState(false);
 
   const userName = localStorage.getItem('userName') || 'User';
 
@@ -175,7 +179,7 @@ const FoodList = () => {
             </Link>
           </div>
           <div className="navbar-menu-wrapper d-flex align-items-center justify-content-end flex-grow-0">
-            <span style={{ color: "white", marginRight: "20px" }}>👋 Hi, {userName}</span>
+           
             <ul className="navbar-nav navbar-nav-right d-flex align-items-center">
               <li className="nav-item">
                 <Link className="nav-link" to="/notifications">
@@ -187,80 +191,150 @@ const FoodList = () => {
           </div>
         </nav>
 
-        {/* Sidebar */}
-        <div className="container-fluid page-body-wrapper">
-          <nav className="sidebar sidebar-offcanvas" id="sidebar" style={{ backgroundColor: "#121212" }}>
-            <ul className="nav">
-              <li className="nav-item section-header">
-                <span className="nav-link text-muted text-uppercase small font-weight-bold">
-                  <span className="menu-title">Main Menu</span>
-                </span>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-white" to="/dashboard">
-                  <span className="menu-title">📊 Dashboard</span>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-white" to="/work">
-                  <span className="menu-title">🏋️ Workouts</span>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-white" to="/food">
-                  <span className="menu-title">🍎 Nutrition</span>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-white" to="/foodlist">
-                  <span className="menu-title">🍎 FoodList</span>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-white" to="/pro">
-                  <span className="menu-title">📈 Progress</span>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-white" to="/goals">
-                  <span className="menu-title">🎯 Goals</span>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-white" to="/reminder">
-                  <span className="menu-title">🚨 Reminders</span>
-                </Link>
-              </li>
-              <li className="nav-item section-header mt-3">
-                <span className="nav-link text-muted text-uppercase small font-weight-bold">
-                  <span className="menu-title">Others</span>
-                </span>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-white" to="/getuser">
-                  <span className="menu-title">👤 Profile</span>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/settings" className="nav-link text-white">
-                  <span className="menu-title">⚙️ Settings</span>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/support" className="nav-link text-white">
-                  <span className="menu-title">❓ Support</span>
-                </Link>
-              </li>
-              <li className="nav-item mt-3">
-                <a href="/logout" className="nav-link text-white" style={{ cursor: 'pointer' }}>
-                  <span className="menu-title">🚪 Log Out</span>
-                </a>
-              </li>
-            </ul>
-          </nav>
-
+   <div className="container-fluid page-body-wrapper">
+     {/* Responsive Sidebar */}
+     <nav
+       className="sidebar sidebar-offcanvas"
+       id="sidebar"
+       style={{ backgroundColor: "#121212", paddingTop: "5px" }}
+     >
+       <ul className="nav flex-column" style={{ paddingBottom: "15px" }}>
+         {/* Main Menu Header */}
+         <li className="nav-item section-header mb-1">
+           <span className="nav-link text-muted text-uppercase small font-weight-bold">
+             <span className="menu-title" style={{ fontSize: "15px" }}>Main Menu</span>
+           </span>
+         </li>
+   
+         {/* Dashboard */}
+         <li className="nav-item mb-1">
+           <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/dashboard">
+             📊 Dashboard
+           </Link>
+         </li>
+   
+         {/* Workouts */}
+         <li className="nav-item mb-1">
+           <div
+             className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+             style={{ fontSize: "15.5px", cursor: "pointer" }}
+             onClick={() => setShowWorkout(!showWorkout)}
+           >
+             🏋️ Workouts <span>{showWorkout ? "▲" : "▼"}</span>
+           </div>
+           {showWorkout && (
+             <div className="pl-3">
+               <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/work">
+                 ➕ Add Workout
+               </Link>
+               <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/">
+                 📋 View Workout
+               </Link>
+             </div>
+           )}
+         </li>
+   
+         {/* Nutrition */}
+         <li className="nav-item mb-1">
+           <div
+             className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+             style={{ fontSize: "15.5px", cursor: "pointer" }}
+             onClick={() => setShowNutrition(!showNutrition)}
+           >
+             🍎 Nutrition <span>{showNutrition ? "▲" : "▼"}</span>
+           </div>
+           {showNutrition && (
+             <div className="pl-3">
+               <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/food">
+                 ➕ Add Meal
+               </Link>
+               <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/foodlist">
+                 📖 View Diet Plan
+               </Link>
+             </div>
+           )}
+         </li>
+   
+         {/* Progress */}
+         <li className="nav-item mb-1">
+           <div
+             className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+             style={{ fontSize: "15.5px", cursor: "pointer" }}
+             onClick={() => setShowProgress(!showProgress)}
+           >
+             📈 Progress <span>{showProgress ? "▲" : "▼"}</span>
+           </div>
+           {showProgress && (
+             <div className="pl-3">
+               <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/pro">
+                 ➕ Add Progress
+               </Link>
+               <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/progresslist">
+                 👀 View Progress
+               </Link>
+             </div>
+           )}
+         </li>
+   
+         <li className="nav-item mb-1">
+           <div
+             className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+             style={{ fontSize: "15.5px", cursor: "pointer" }}
+             onClick={() => setShowsteps(!showsteps)}
+           >
+             📈 Step Count<span>{showProgress ? "▲" : "▼"}</span>
+           </div>
+           {showsteps && (
+             <div className="pl-3">
+               <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">
+                 ➕ Add Steps
+               </Link>
+               <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">
+                 👀 View Steps
+               </Link>
+             </div>
+           )}
+         </li>
+   
+         {/* Goals */}
+         <li className="nav-item mb-1">
+           <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/goals">
+             🎯 Goals
+           </Link>
+         </li>
+   
+         {/* Reminders */}
+         <li className="nav-item mb-1">
+           <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/reminder">
+             🚨 Reminders
+           </Link>
+         </li>
+   
+         {/* Others Header */}
+         <li className="nav-item section-header mt-2 mb-1">
+           <span className="nav-link text-muted text-uppercase small font-weight-bold">
+             <span className="menu-title" style={{ fontSize: "15px" }}>Others</span>
+           </span>
+         </li>
+   
+         {/* Settings */}
+         <li className="nav-item mb-1">
+           <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/settings">
+             ⚙️ Settings
+           </Link>
+         </li>
+   
+         {/* Support */}
+         <li className="nav-item">
+           <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/support">
+             ❓ Support
+           </Link>
+         </li>
+       </ul>
+     </nav>
+   
           {/* Main Content */}
-          <div className="main-panel" style={{ padding: '20px', marginLeft: '250px' }}>
+          <div className="main-panel" style={{ padding: '20px' }}>
             <h2>Your Food Logs</h2>
 
             {/* Search and Filters */}
@@ -284,7 +358,13 @@ const FoodList = () => {
               <select
                 value={searchMealType}
                 onChange={(e) => setSearchMealType(e.target.value)}
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                style={{
+    padding: '8px',
+    borderRadius: '4px',
+    border: '1px solid #ccc',
+    backgroundColor: '#1f1f1f', // Dark background
+    color: 'white' // White text
+  }}
               >
                 <option value="">All Meal Types</option>
                 <option value="breakfast">Breakfast</option>
@@ -424,192 +504,153 @@ const FoodList = () => {
                 </div>
               )}
             </div>
+{showPopup && (
+  <div
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 9999,
+      padding: '20px',
+    }}
+  >
+    <div
+      style={{
+        backgroundColor: '#121212',
+        borderRadius: '10px',
+        padding: '30px',
+        width: '100%',
+        maxWidth: '400px',
+        color: 'white',
+        boxShadow: '0 0 20px rgba(255, 255, 0, 0.8)',
+      }}
+    >
+      <h3 style={{ marginBottom: '20px', textAlign: 'center' }}>Edit Food Log</h3>
 
-            {/* Edit Popup Modal */}
-            {showPopup && (
-              <div
-                className={styles.popup}
-                style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  width: '100vw',
-                  height: '100vh',
-                  backgroundColor: 'rgba(0,0,0,0.7)',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  zIndex: 9999,
-                  padding: '20px'
-                }}
-              >
-                <div
-                  style={{
-                    backgroundColor: '#121212',
-                    borderRadius: '10px',
-                    padding: '30px',
-                    width: '100%',
-                    maxWidth: '400px',
-                    color: 'white',
-                    boxShadow: '0 0 20px rgba(255, 255, 0, 0.8)'
-                  }}
-                >
-                  <h3 style={{ marginBottom: '20px' }}>Edit Food Log</h3>
-                  <input
-                    type="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      marginBottom: '10px',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      fontSize: '14px'
-                    }}
-                  />
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Food Name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      marginBottom: '10px',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      fontSize: '14px'
-                    }}
-                  />
-                  <select
-                    name="mealType"
-                    value={formData.mealType}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      marginBottom: '10px',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      fontSize: '14px'
-                    }}
-                  >
-                    <option value="">Select Meal Type</option>
-                    <option value="breakfast">Breakfast</option>
-                    <option value="lunch">Lunch</option>
-                    <option value="dinner">Dinner</option>
-                    <option value="snack">Snack</option>
-                  </select>
-                  <input
-                    type="number"
-                    name="quantity"
-                    placeholder="Quantity"
-                    value={formData.quantity}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      marginBottom: '10px',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      fontSize: '14px'
-                    }}
-                  />
-                  <input
-                    type="number"
-                    name="calories"
-                    placeholder="Calories"
-                    value={formData.calories}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      marginBottom: '10px',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      fontSize: '14px'
-                    }}
-                  />
-                  <input
-                    type="number"
-                    name="protein"
-                    placeholder="Protein (g)"
-                    value={formData.protein}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      marginBottom: '10px',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      fontSize: '14px'
-                    }}
-                  />
-                  <input
-                    type="number"
-                    name="carbs"
-                    placeholder="Carbs (g)"
-                    value={formData.carbs}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      marginBottom: '10px',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      fontSize: '14px'
-                    }}
-                  />
-                  <input
-                    type="number"
-                    name="fat"
-                    placeholder="Fat (g)"
-                    value={formData.fat}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      marginBottom: '20px',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      fontSize: '14px'
-                    }}
-                  />
+      {(() => {
+        const inputStyle = {
+          width: '100%',
+          marginBottom: '10px',
+          padding: '8px',
+          borderRadius: '4px',
+          border: '1px solid #444',
+          fontSize: '14px',
+          backgroundColor: '#1e1e1e',
+          color: 'white',
+        };
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                    <button
-                      onClick={closeModal}
-                      style={{
-                        backgroundColor: '#6c757d',
-                        border: 'none',
-                        borderRadius: '6px',
-                        padding: '8px 16px',
-                        cursor: 'pointer',
-                        color: 'white'
-                      }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSave}
-                      style={{
-                        backgroundColor: 'yellow',
-                        border: 'none',
-                        borderRadius: '6px',
-                        padding: '8px 16px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      Save
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+        return (
+          <>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              style={inputStyle}
+            />
+            <input
+              type="text"
+              name="name"
+              placeholder="Food Name"
+              value={formData.name}
+              onChange={handleChange}
+              style={inputStyle}
+            />
+            <select
+              name="mealType"
+              value={formData.mealType}
+              onChange={handleChange}
+              style={inputStyle}
+            >
+              <option value="">Select Meal Type</option>
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="snack">Snack</option>
+            </select>
+            <input
+              type="number"
+              name="quantity"
+              placeholder="Quantity"
+              value={formData.quantity}
+              onChange={handleChange}
+              style={inputStyle}
+            />
+            <input
+              type="number"
+              name="calories"
+              placeholder="Calories"
+              value={formData.calories}
+              onChange={handleChange}
+              style={inputStyle}
+            />
+            <input
+              type="number"
+              name="protein"
+              placeholder="Protein (g)"
+              value={formData.protein}
+              onChange={handleChange}
+              style={inputStyle}
+            />
+            <input
+              type="number"
+              name="carbs"
+              placeholder="Carbs (g)"
+              value={formData.carbs}
+              onChange={handleChange}
+              style={inputStyle}
+            />
+            <input
+              type="number"
+              name="fat"
+              placeholder="Fat (g)"
+              value={formData.fat}
+              onChange={handleChange}
+              style={{ ...inputStyle, marginBottom: '20px' }}
+            />
+          </>
+        );
+      })()}
+
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+        <button
+          onClick={closeModal}
+          style={{
+            backgroundColor: '#6c757d',
+            border: 'none',
+            borderRadius: '6px',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            color: 'white',
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          style={{
+            backgroundColor: 'yellow',
+            border: 'none',
+            borderRadius: '6px',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            color: '#121212',
+          }}
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
           </div>
         </div>
       </div>

@@ -14,6 +14,7 @@ export default function Main() {
   const [showWorkout, setShowWorkout] = useState(false);
   const [showNutrition, setShowNutrition] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
+  const [showsteps, setShowsteps] = useState(false);
 
   useEffect(() => {
     const userInfo = localStorage.getItem("user_information");
@@ -276,126 +277,147 @@ export default function Main() {
 
 
   <div className="container-fluid page-body-wrapper">
-      {/* Responsive Sidebar */}
-      <nav
-        className="sidebar sidebar-offcanvas"
-        id="sidebar"
-        style={{ backgroundColor: "#121212", paddingTop: "10px" }}
-      >
-        <ul className="nav flex-column" style={{ paddingBottom: "15px" }}>
-          {/* Main Menu Header */}
-          <li className="nav-item section-header mb-2">
-            <span className="nav-link text-muted text-uppercase small font-weight-bold">
-              <span className="menu-title" style={{ fontSize: "15px" }}>Main Menu</span>
-            </span>
-          </li>
+  {/* Responsive Sidebar */}
+  <nav
+    className="sidebar sidebar-offcanvas"
+    id="sidebar"
+    style={{ backgroundColor: "#121212", paddingTop: "5px" }}
+  >
+    <ul className="nav flex-column" style={{ paddingBottom: "15px" }}>
+      {/* Main Menu Header */}
+      <li className="nav-item section-header mb-1">
+        <span className="nav-link text-muted text-uppercase small font-weight-bold">
+          <span className="menu-title" style={{ fontSize: "15px" }}>Main Menu</span>
+        </span>
+      </li>
 
-          {/* Dashboard */}
-          <li className="nav-item mb-2">
-            <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/dashboard">
-              📊 Dashboard
+      {/* Dashboard */}
+      <li className="nav-item mb-1">
+        <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/dashboard">
+          📊 Dashboard
+        </Link>
+      </li>
+
+      {/* Workouts */}
+      <li className="nav-item mb-1">
+        <div
+          className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+          style={{ fontSize: "15.5px", cursor: "pointer" }}
+          onClick={() => setShowWorkout(!showWorkout)}
+        >
+          🏋️ Workouts <span>{showWorkout ? "▲" : "▼"}</span>
+        </div>
+        {showWorkout && (
+          <div className="pl-3">
+            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/work">
+              ➕ Add Workout
             </Link>
-          </li>
-
-          {/* Workouts */}
-          <li className="nav-item mb-2">
-            <div
-              className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
-              style={{ fontSize: "15.5px", cursor: "pointer" }}
-              onClick={() => setShowWorkout(!showWorkout)}
-            >
-              🏋️ Workouts <span>{showWorkout ? "▲" : "▼"}</span>
-            </div>
-            {showWorkout && (
-              <div className="pl-3">
-                <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/work">
-                  ➕ Add Workout
-                </Link>
-                <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">
-                  📋 View Workout
-                </Link>
-              </div>
-            )}
-          </li>
-
-          {/* Nutrition */}
-          <li className="nav-item mb-2">
-            <div
-              className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
-              style={{ fontSize: "15.5px", cursor: "pointer" }}
-              onClick={() => setShowNutrition(!showNutrition)}
-            >
-              🍎 Nutrition <span>{showNutrition ? "▲" : "▼"}</span>
-            </div>
-            {showNutrition && (
-              <div className="pl-3">
-                <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/food">
-                  ➕ Add Meal
-                </Link>
-                <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/">
-                  📖 View Diet Plan
-                </Link>
-              </div>
-            )}
-          </li>
-
-          {/* Progress */}
-          <li className="nav-item mb-2">
-            <div
-              className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
-              style={{ fontSize: "15.5px", cursor: "pointer" }}
-              onClick={() => setShowProgress(!showProgress)}
-            >
-              📈 Progress <span>{showProgress ? "▲" : "▼"}</span>
-            </div>
-            {showProgress && (
-              <div className="pl-3">
-                <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/pro">
-                  ➕ Add Progress
-                </Link>
-                <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/progresslist">
-                  👀 View Progress
-                </Link>
-              </div>
-            )}
-          </li>
-
-          {/* Goals */}
-          <li className="nav-item mb-2">
-            <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/goals">
-              🎯 Goals
+            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/">
+              📋 View Workout
             </Link>
-          </li>
+          </div>
+        )}
+      </li>
 
-          {/* Reminders */}
-          <li className="nav-item mb-2">
-            <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/reminder">
-              🚨 Reminders
+      {/* Nutrition */}
+      <li className="nav-item mb-1">
+        <div
+          className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+          style={{ fontSize: "15.5px", cursor: "pointer" }}
+          onClick={() => setShowNutrition(!showNutrition)}
+        >
+          🍎 Nutrition <span>{showNutrition ? "▲" : "▼"}</span>
+        </div>
+        {showNutrition && (
+          <div className="pl-3">
+            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/food">
+              ➕ Add Meal
             </Link>
-          </li>
-
-          {/* Others Header */}
-          <li className="nav-item section-header mt-4 mb-2">
-            <span className="nav-link text-muted text-uppercase small font-weight-bold">
-              <span className="menu-title" style={{ fontSize: "15px" }}>Others</span>
-            </span>
-          </li>
-
-          {/* Settings */}
-          <li className="nav-item mb-2">
-            <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/settings">
-              ⚙️ Settings
+            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/foodlist">
+              📖 View Diet Plan
             </Link>
-          </li>
+          </div>
+        )}
+      </li>
 
-          {/* Support */}
-          <li className="nav-item">
-            <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/support">
-              ❓ Support
+      {/* Progress */}
+      <li className="nav-item mb-1">
+        <div
+          className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+          style={{ fontSize: "15.5px", cursor: "pointer" }}
+          onClick={() => setShowProgress(!showProgress)}
+        >
+          📈 Progress <span>{showProgress ? "▲" : "▼"}</span>
+        </div>
+        {showProgress && (
+          <div className="pl-3">
+            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/pro">
+              ➕ Add Progress
             </Link>
-          </li>
-        </ul>
-      </nav>
+            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/progresslist">
+              👀 View Progress
+            </Link>
+          </div>
+        )}
+      </li>
+
+      <li className="nav-item mb-1">
+        <div
+          className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+          style={{ fontSize: "15.5px", cursor: "pointer" }}
+          onClick={() => setShowsteps(!showsteps)}
+        >
+          📈 Step Count<span>{showProgress ? "▲" : "▼"}</span>
+        </div>
+        {showsteps && (
+          <div className="pl-3">
+            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">
+              ➕ Add Steps
+            </Link>
+            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">
+              👀 View Steps
+            </Link>
+          </div>
+        )}
+      </li>
+
+      {/* Goals */}
+      <li className="nav-item mb-1">
+        <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/goals">
+          🎯 Goals
+        </Link>
+      </li>
+
+      {/* Reminders */}
+      <li className="nav-item mb-1">
+        <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/reminder">
+          🚨 Reminders
+        </Link>
+      </li>
+
+      {/* Others Header */}
+      <li className="nav-item section-header mt-2 mb-1">
+        <span className="nav-link text-muted text-uppercase small font-weight-bold">
+          <span className="menu-title" style={{ fontSize: "15px" }}>Others</span>
+        </span>
+      </li>
+
+      {/* Settings */}
+      <li className="nav-item mb-1">
+        <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/settings">
+          ⚙️ Settings
+        </Link>
+      </li>
+
+      {/* Support */}
+      <li className="nav-item">
+        <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/support">
+          ❓ Support
+        </Link>
+      </li>
+    </ul>
+  </nav>
+
             
 
 
