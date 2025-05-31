@@ -1,24 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../style/ProgressForm.module.css';
 import "react-toastify/dist/ReactToastify.css";
+ 
 
 const ProgressForm = ({ handleLogout, user }) => {
-   const [showWorkout, setShowWorkout] = useState(false);
-    const [showNutrition, setShowNutrition] = useState(false);
-    const [showProgress, setShowProgress] = useState(false);
-    const [showsteps, setShowsteps] = useState(false);
-  
+  const [showWorkout, setShowWorkout] = useState(false);
+  const [showNutrition, setShowNutrition] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
+  const [showsteps, setShowsteps] = useState(false);
+
   const [formData, setFormData] = useState({
     weight: '',
+    height: '',
+    bmi: '',
     measurements: '',
     performance: '',
   });
 
+
+  useEffect(() => {
+    const heightInMeters = formData.height / 100;
+    if (formData.weight && heightInMeters) {
+      const bmi = (formData.weight / (heightInMeters * heightInMeters)).toFixed(2);
+      setFormData(prev => ({ ...prev, bmi }));
+    }
+  }, [formData.weight, formData.height]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,6 +40,8 @@ const ProgressForm = ({ handleLogout, user }) => {
       alert('Progress submitted!');
       setFormData({
         weight: '',
+        height:'',
+        bmi: '',
         measurements: '',
         performance: '',
       });
@@ -262,6 +277,46 @@ const ProgressForm = ({ handleLogout, user }) => {
                         }}
                       />
                     </div>
+                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column' }}>
+  <label style={{ color: '#e0e0e0', marginBottom: '8px', fontWeight: '500' }}>Height (cm)</label>
+  <input 
+    name="height" 
+    type="number" 
+    value={formData.height} 
+    onChange={handleChange} 
+    required 
+    style={{
+      width: '100%',
+      padding: '12px 15px',
+      backgroundColor: '#2a2a2a',
+      border: '1px solid #444',
+      borderRadius: '6px',
+      color: 'white',
+      fontSize: '16px'
+    }}
+  />
+</div>
+
+<div className="form-group" style={{ display: 'flex', flexDirection: 'column' }}>
+  <label style={{ color: '#e0e0e0', marginBottom: '8px', fontWeight: '500' }}>BMI</label>
+  <input 
+    name="bmi" 
+    type="number" 
+    value={formData.bmi} 
+    onChange={handleChange} 
+    required 
+    step="0.01"
+    style={{
+      width: '100%',
+      padding: '12px 15px',
+      backgroundColor: '#2a2a2a',
+      border: '1px solid #444',
+      borderRadius: '6px',
+      color: 'white',
+      fontSize: '16px'
+    }}
+  />
+</div>
 
                     <div className="form-group" style={{ display: 'flex', flexDirection: 'column' }}>
                       <label style={{ color: '#e0e0e0', marginBottom: '8px', fontWeight: '500' }}>Measurements</label>

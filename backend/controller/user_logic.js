@@ -1,6 +1,7 @@
 let user = require("../collection/User");
 let b = require("bcrypt");
 let nodemailer = require("nodemailer")
+const Step = require('../Models/Step');
 const Notification = require("../Models/notificationSchema");
 // 🆕 Import the models
 const Workout = require("../Models/Workout");
@@ -358,7 +359,29 @@ markNotificationRead: async (req, res) => {
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
+},
+
+
+addStep : async (req, res) => {
+  try {
+    const newStep = new Step(req.body);
+    await newStep.save();
+    res.status(201).json(newStep);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+},
+
+getSteps : async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const steps = await Step.find({ userId }).sort({ date: -1 });
+    res.json(steps);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
 }
+
 
   
 }

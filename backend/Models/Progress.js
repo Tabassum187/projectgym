@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+let mongoose = require("mongoose")
 
 const progressSchema = new mongoose.Schema({
   date: {
@@ -6,6 +6,14 @@ const progressSchema = new mongoose.Schema({
     default: Date.now
   },
   weight: {
+    type: Number,
+    required: true
+  },
+  height: {
+    type: Number,
+    required: true
+  },
+  bmi: {
     type: Number,
     required: true
   },

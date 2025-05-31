@@ -23,6 +23,8 @@ import Notifications from './Component/Notifications';
 import ProgressList from './Component/ProgressList';
 import User from './Component/Outlet/User';
 import Adminget from './Component/Adminget';
+import StepForm from './Component/Stepform';
+import StepList from './Component/Steplist';
 
 
 
@@ -79,6 +81,11 @@ function App() {
            <Route path='/reminder' element={<ReminderForm />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/stepform" element={<StepForm />} />
+          <Route path="/steplist" element={<StepList />} />
+          
+    
+        
         </Routes>
       </div>
     </BrowserRouter>
