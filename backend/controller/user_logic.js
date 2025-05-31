@@ -2,7 +2,6 @@ let user = require("../collection/User");
 let b = require("bcrypt");
 let nodemailer = require("nodemailer")
 const Step = require('../Models/Step');
-const Notification = require("../Models/notificationSchema");
 // 🆕 Import the models
 const Workout = require("../Models/Workout");
 const FoodLog = require("../Models/FoodLog");
@@ -329,6 +328,11 @@ let user_function = {
         
     }
 },
+
+
+
+
+
 // Assuming Express and MongoDB
 // app.put("/gym/user/:id", async (req, res) => {
 //   try {
@@ -341,25 +345,12 @@ let user_function = {
 //     res.status(500).json({ msg: "Server error" });
 //   }
 // });
-getNotifications: async (req, res) => {
-  try {
-    const { userId } = req.query;
-    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
-    res.json(notifications);
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-},
 
-markNotificationRead: async (req, res) => {
-  try {
-    const { id } = req.params;
-    await Notification.findByIdAndUpdate(id, { isRead: true });
-    res.json({ msg: "Notification marked as read" });
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-},
+
+
+
+
+
 
 
 addStep : async (req, res) => {

@@ -14,8 +14,6 @@ r.post("/log", user_logic.login);
 r.post("/fp", user_logic.forgetpassword);
 
 
-
-
 // -------- NEW: Workout Routes --------
 r.get("/workouts", user_logic.getWorkouts);      // get all workouts
 r.post("/workouts", user_logic.addWorkout);      // add a new workout

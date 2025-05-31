@@ -19,7 +19,7 @@ import ResetPassword from './Component/ResetPassword';
 import Goals from './Component/Goals';
 import ReminderForm from './Component/ReminderForm';
 import Profile from './Component/Profile';
-import Notifications from './Component/Notifications';
+
 import ProgressList from './Component/ProgressList';
 import User from './Component/Outlet/User';
 import Adminget from './Component/Adminget';
@@ -80,7 +80,7 @@ function App() {
           <Route path='/goals' element={<Goals />} />
            <Route path='/reminder' element={<ReminderForm />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/notifications" element={<Notifications />} />
+         
           <Route path="/stepform" element={<StepForm />} />
           <Route path="/steplist" element={<StepList />} />
           
