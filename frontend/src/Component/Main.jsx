@@ -2,6 +2,30 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaTimes } from 'react-icons/fa';
+import { Line, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function Main() {
   let navigate = useNavigate();
@@ -15,6 +39,8 @@ export default function Main() {
   const [showNutrition, setShowNutrition] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [showsteps, setShowsteps] = useState(false);
+  const [statsData, setStatsData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const userInfo = localStorage.getItem("user_information");
@@ -22,6 +48,9 @@ export default function Main() {
       try {
         const parsed = JSON.parse(userInfo);
         setUserEmail(parsed.email);
+        if (parsed.email !== "admin@gmail.com") {
+          fetchStatsData(parsed.email);
+        }
       } catch (e) {
         console.error("Invalid user_information format");
         localStorage.removeItem("user_information");
@@ -31,6 +60,31 @@ export default function Main() {
     }
   }, [navigate]);
 
+ const fetchStatsData = async (email) => {
+  setIsLoading(true);
+  try {
+    // Create fresh data objects with spread operator to ensure new references
+    setStatsData({
+      calories: [1800, 1900, 2100, 2000, 2200, 2300, 1950],
+      workouts: [3, 5],
+      weight: [
+        { date: '1 Jan', value: 75 },
+        { date: '15 Jan', value: 74.5 },
+        { date: '1 Feb', value: 73.8 }
+      ],
+      water: {
+        current: 2.1,
+        goal: 2.5
+      }
+    });
+    setIsLoading(false);
+  } catch (error) {
+    console.error("Error fetching stats data:", error);
+    setIsLoading(false);
+  }
+};
+
+  
   useEffect(() => {
     if (showProfilePopup && userEmail && userEmail !== "admin@gmail.com") {
       const fetchUserData = async () => {
@@ -59,6 +113,92 @@ export default function Main() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showProfilePopup]);
+
+  const caloriesData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{
+      label: 'Calories Consumed',
+      data: statsData?.calories || [0, 0, 0, 0, 0, 0, 0],
+      borderColor: '#FFD700',
+      backgroundColor: 'rgba(255, 215, 0, 0.1)',
+      tension: 0.4,
+      fill: true
+    }]
+  };
+
+  const workoutData = {
+    labels: ['Last Week', 'This Week'],
+    datasets: [{
+      label: 'Workouts',
+      data: statsData?.workouts || [0, 0],
+      backgroundColor: ['#4CAF50', '#2E7D32'],
+      borderColor: ['#4CAF50', '#2E7D32'],
+      borderWidth: 1
+    }]
+  };
+
+  const weightData = {
+    labels: statsData?.weight?.map(item => item.date) || ['Jan', 'Feb', 'Mar'],
+    datasets: [{
+      label: 'Weight (kg)',
+      data: statsData?.weight?.map(item => item.value) || [0, 0, 0],
+      borderColor: '#2196F3',
+      backgroundColor: 'rgba(33, 150, 243, 0.1)',
+      tension: 0.4
+    }]
+  };
+
+  const waterData = {
+    labels: ['Water Intake'],
+    datasets: [{
+      label: 'Today',
+      data: [statsData?.water?.current || 0],
+      backgroundColor: ['#FFC107'],
+      borderColor: ['#FFA000'],
+      borderWidth: 1
+    }, {
+      label: 'Goal',
+      data: [statsData?.water?.goal || 2.5],
+      backgroundColor: ['#FFE082'],
+      borderColor: ['#FFD54F'],
+      borderWidth: 1
+    }]
+  };
+
+ const chartOptions = {
+  responsive: true,
+  animation: {
+    duration: 2000,
+    animateScale: true,
+    animateRotate: true
+  },
+  plugins: {
+    legend: {
+      display: false
+    }
+  },
+  scales: {
+    x: {
+      ticks: {
+        color: '#aaa'
+      },
+      grid: {
+        color: 'rgba(255,255,255,0.1)'
+      }
+    },
+    y: {
+      ticks: {
+        color: '#aaa'
+      },
+      grid: {
+        color: 'rgba(255,255,255,0.1)'
+      },
+      beginAtZero: false
+    }
+  },
+  maintainAspectRatio: false
+};
+
 
   const handleLogout = () => {
     const confirmed = window.confirm("Are you sure you want to logout?");
@@ -272,361 +412,444 @@ export default function Main() {
           </div>
         )}
 
+        <div className="container-fluid page-body-wrapper">
+          <nav
+            className="sidebar sidebar-offcanvas"
+            id="sidebar"
+            style={{ backgroundColor: "#121212", paddingTop: "5px" }}
+          >
+            <ul className="nav flex-column" style={{ paddingBottom: "15px" }}>
+              <li className="nav-item section-header mb-1">
+                <span className="nav-link text-muted text-uppercase small font-weight-bold">
+                  <span className="menu-title" style={{ fontSize: "15px" }}>Main Menu</span>
+                </span>
+              </li>
 
+              <li className="nav-item mb-1">
+                <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/dashboard">
+                  📊 Dashboard
+                </Link>
+              </li>
 
+              <li className="nav-item mb-1">
+                <div
+                  className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+                  style={{ fontSize: "15.5px", cursor: "pointer" }}
+                  onClick={() => setShowWorkout(!showWorkout)}
+                >
+                  🏋️ Workouts <span>{showWorkout ? "▲" : "▼"}</span>
+                </div>
+                {showWorkout && (
+                  <div className="pl-3">
+                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/work">
+                      ➕ Add Workout
+                    </Link>
+                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/">
+                      📋 View Workout
+                    </Link>
+                  </div>
+                )}
+              </li>
 
+              <li className="nav-item mb-1">
+                <div
+                  className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+                  style={{ fontSize: "15.5px", cursor: "pointer" }}
+                  onClick={() => setShowNutrition(!showNutrition)}
+                >
+                  🍎 Nutrition <span>{showNutrition ? "▲" : "▼"}</span>
+                </div>
+                {showNutrition && (
+                  <div className="pl-3">
+                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/food">
+                      ➕ Add Meal
+                    </Link>
+                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/foodlist">
+                      📖 View Diet Plan
+                    </Link>
+                  </div>
+                )}
+              </li>
 
-  <div className="container-fluid page-body-wrapper">
-  {/* Responsive Sidebar */}
-  <nav
-    className="sidebar sidebar-offcanvas"
-    id="sidebar"
-    style={{ backgroundColor: "#121212", paddingTop: "5px" }}
-  >
-    <ul className="nav flex-column" style={{ paddingBottom: "15px" }}>
-      {/* Main Menu Header */}
-      <li className="nav-item section-header mb-1">
-        <span className="nav-link text-muted text-uppercase small font-weight-bold">
-          <span className="menu-title" style={{ fontSize: "15px" }}>Main Menu</span>
-        </span>
-      </li>
+              <li className="nav-item mb-1">
+                <div
+                  className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+                  style={{ fontSize: "15.5px", cursor: "pointer" }}
+                  onClick={() => setShowProgress(!showProgress)}
+                >
+                  📈 Progress <span>{showProgress ? "▲" : "▼"}</span>
+                </div>
+                {showProgress && (
+                  <div className="pl-3">
+                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/pro">
+                      ➕ Add Progress
+                    </Link>
+                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/progresslist">
+                      👀 View Progress
+                    </Link>
+                  </div>
+                )}
+              </li>
 
-      {/* Dashboard */}
-      <li className="nav-item mb-1">
-        <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/dashboard">
-          📊 Dashboard
-        </Link>
-      </li>
+              <li className="nav-item mb-1">
+                <div
+                  className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
+                  style={{ fontSize: "15.5px", cursor: "pointer" }}
+                  onClick={() => setShowsteps(!showsteps)}
+                >
+                  📈 Step Count<span>{showProgress ? "▲" : "▼"}</span>
+                </div>
+                {showsteps && (
+                  <div className="pl-3">
+                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">
+                      ➕ Add Steps
+                    </Link>
+                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">
+                      👀 View Steps
+                    </Link>
+                  </div>
+                )}
+              </li>
 
-      {/* Workouts */}
-      <li className="nav-item mb-1">
-        <div
-          className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
-          style={{ fontSize: "15.5px", cursor: "pointer" }}
-          onClick={() => setShowWorkout(!showWorkout)}
-        >
-          🏋️ Workouts <span>{showWorkout ? "▲" : "▼"}</span>
-        </div>
-        {showWorkout && (
-          <div className="pl-3">
-            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/work">
-              ➕ Add Workout
-            </Link>
-            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/">
-              📋 View Workout
-            </Link>
-          </div>
-        )}
-      </li>
+              <li className="nav-item mb-1">
+                <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/goals">
+                  🎯 Goals
+                </Link>
+              </li>
 
-      {/* Nutrition */}
-      <li className="nav-item mb-1">
-        <div
-          className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
-          style={{ fontSize: "15.5px", cursor: "pointer" }}
-          onClick={() => setShowNutrition(!showNutrition)}
-        >
-          🍎 Nutrition <span>{showNutrition ? "▲" : "▼"}</span>
-        </div>
-        {showNutrition && (
-          <div className="pl-3">
-            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/food">
-              ➕ Add Meal
-            </Link>
-            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/foodlist">
-              📖 View Diet Plan
-            </Link>
-          </div>
-        )}
-      </li>
+              <li className="nav-item mb-1">
+                <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/reminder">
+                  🚨 Reminders
+                </Link>
+              </li>
 
-      {/* Progress */}
-      <li className="nav-item mb-1">
-        <div
-          className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
-          style={{ fontSize: "15.5px", cursor: "pointer" }}
-          onClick={() => setShowProgress(!showProgress)}
-        >
-          📈 Progress <span>{showProgress ? "▲" : "▼"}</span>
-        </div>
-        {showProgress && (
-          <div className="pl-3">
-            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/pro">
-              ➕ Add Progress
-            </Link>
-            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/progresslist">
-              👀 View Progress
-            </Link>
-          </div>
-        )}
-      </li>
+              <li className="nav-item section-header mt-2 mb-1">
+                <span className="nav-link text-muted text-uppercase small font-weight-bold">
+                  <span className="menu-title" style={{ fontSize: "15px" }}>Others</span>
+                </span>
+              </li>
 
-      <li className="nav-item mb-1">
-        <div
-          className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center"
-          style={{ fontSize: "15.5px", cursor: "pointer" }}
-          onClick={() => setShowsteps(!showsteps)}
-        >
-          📈 Step Count<span>{showProgress ? "▲" : "▼"}</span>
-        </div>
-        {showsteps && (
-          <div className="pl-3">
-            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">
-              ➕ Add Steps
-            </Link>
-            <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">
-              👀 View Steps
-            </Link>
-          </div>
-        )}
-      </li>
+              <li className="nav-item mb-1">
+                <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/settings">
+                  ⚙️ Settings
+                </Link>
+              </li>
 
-      {/* Goals */}
-      <li className="nav-item mb-1">
-        <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/goals">
-          🎯 Goals
-        </Link>
-      </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/support">
+                  ❓ Support
+                </Link>
+              </li>
+            </ul>
+          </nav>
 
-      {/* Reminders */}
-      <li className="nav-item mb-1">
-        <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/reminder">
-          🚨 Reminders
-        </Link>
-      </li>
-
-      {/* Others Header */}
-      <li className="nav-item section-header mt-2 mb-1">
-        <span className="nav-link text-muted text-uppercase small font-weight-bold">
-          <span className="menu-title" style={{ fontSize: "15px" }}>Others</span>
-        </span>
-      </li>
-
-      {/* Settings */}
-      <li className="nav-item mb-1">
-        <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/settings">
-          ⚙️ Settings
-        </Link>
-      </li>
-
-      {/* Support */}
-      <li className="nav-item">
-        <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/support">
-          ❓ Support
-        </Link>
-      </li>
-    </ul>
-  </nav>
-
-            
-
-
-
-
-          
-          {/* Main Content */}
           <div className="main-panel">
             <div className="content-wrapper">
-              {/* Welcome Banner */}
-              <div className="row">
-                <div className="col-12">
-                  <div className="welcome-banner p-4 bg-dark-gradient rounded">
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h2 className="text-dark">Welcome back, Fitness Enthusiast!</h2>
-                        <p className="text-dark">Track your fitness journey and achieve your goals</p>
-                      </div>
-                      <div>
-                       <Link
-  to="/work"
-  className="btn mr-2"
-  style={{ backgroundColor: '#FFC107', color: 'black' }}
->
-  <i className="mdi mdi-plus"></i> Add Workout
-</Link>
-
-<Link
-  to="/food"
-  className="btn"
-  style={{ backgroundColor: '#FFC107', color: 'black' }}
->
-  <i className="mdi mdi-food"></i> Log Meal
-</Link>
-
+              {userEmail === "admin@gmail.com" ? (
+                <>
+                  <div className="row">
+                    <div className="col-12">
+                      <div className="welcome-banner p-4 bg-dark-gradient rounded">
+                        <h2 className="text-dark">Welcome Admin!</h2>
+                        <p className="text-dark">Manage your fitness application</p>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-
-
-
-
-
-              
-              {/* Stats Overview */}
-              <div className="row mt-4">
-                <div className="col-xl-3 col-lg-6 col-sm-6 grid-margin stretch-card">
-                  <div className="card bg-dark">
-                    <div className="card-body text-center">
-                      <h5 className="mb-2 text-light font-weight-normal">Today's Calories</h5>
-                      <h2 className="mb-4 text-white font-weight-bold">1,850</h2>
-                      <div className="dashboard-progress dashboard-progress-1 d-flex align-items-center justify-content-center item-parent">
-                        <i className="mdi mdi-fire icon-md absolute-center text-primary"></i>
-                      </div>
-                      <p className="mt-4 mb-0 text-muted">Remaining</p>
-                      <h3 className="mb-0 font-weight-bold mt-2 text-white">450</h3>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-xl-3 col-lg-6 col-sm-6 grid-margin stretch-card">
-                  <div className="card bg-dark">
-                    <div className="card-body text-center">
-                      <h5 className="mb-2 text-light font-weight-normal">Workouts This Week</h5>
-                      <h2 className="mb-4 text-white font-weight-bold">4</h2>
-                      <div className="dashboard-progress dashboard-progress-2 d-flex align-items-center justify-content-center item-parent">
-                        <i className="mdi mdi-dumbbell icon-md absolute-center text-success"></i>
-                      </div>
-                      <p className="mt-4 mb-0 text-muted">Last workout</p>
-                      <h3 className="mb-0 font-weight-bold mt-2 text-white">2 days ago</h3>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-xl-3 col-lg-6 col-sm-6 grid-margin stretch-card">
-                  <div className="card bg-dark">
-                    <div className="card-body text-center">
-                      <h5 className="mb-2 text-light font-weight-normal">Current Weight</h5>
-                      <h2 className="mb-4 text-white font-weight-bold">78.5 kg</h2>
-                      <div className="dashboard-progress dashboard-progress-3 d-flex align-items-center justify-content-center item-parent">
-                        <i className="mdi mdi-scale-bathroom icon-md absolute-center text-info"></i>
-                      </div>
-                      <p className="mt-4 mb-0 text-muted">Change this month</p>
-                      <h3 className="mb-0 font-weight-bold mt-2 text-white">-1.2 kg</h3>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-xl-3 col-lg-6 col-sm-6 grid-margin stretch-card">
-                  <div className="card bg-dark">
-                    <div className="card-body text-center">
-                      <h5 className="mb-2 text-light font-weight-normal">Water Intake</h5>
-                      <h2 className="mb-4 text-white font-weight-bold">2.1 L</h2>
-                      <div className="dashboard-progress dashboard-progress-4 d-flex align-items-center justify-content-center item-parent">
-                        <i className="mdi mdi-cup-water icon-md absolute-center text-warning"></i>
-                      </div>
-                      <p className="mt-4 mb-0 text-muted">Daily goal</p>
-                      <h3 className="mb-0 font-weight-bold mt-2 text-white">2.5 L</h3>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-
-
-
-
-              
-              {/* Recent Activity */}
-              <div className="row">
-                <div className="col-12 grid-margin">
-                  <div className="card bg-dark">
-                    <div className="card-body">
-                      <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h4 className="card-title text-white">Recent Activity</h4>
-                        <Link to="/activity" className="btn btn-sm btn-outline-light">View All</Link>
-                      </div>
-                      <div className="table-responsive">
-                        <table className="table table-dark">
-                          <thead>
-                            <tr>
-                              <th>Date</th>
-                              <th>Activity</th>
-                              <th>Type</th>
-                              <th>Details</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>Today, 08:30 AM</td>
-                              <td>Morning Run</td>
-                              <td><span className="badge badge-primary">Cardio</span></td>
-                              <td>5.2 km in 28:15</td>
-                            </tr>
-                            <tr>
-                              <td>Yesterday, 07:15 PM</td>
-                              <td>Chest & Triceps</td>
-                              <td><span className="badge badge-success">Strength</span></td>
-                              <td>12 exercises, 45 min</td>
-                            </tr>
-                            <tr>
-                              <td>Yesterday, 12:30 PM</td>
-                              <td>Lunch</td>
-                              <td><span className="badge badge-info">Nutrition</span></td>
-                              <td>Grilled chicken, rice, veggies - 650 kcal</td>
-                            </tr>
-                            <tr>
-                              <td>2 days ago, 06:45 AM</td>
-                              <td>Yoga Session</td>
-                              <td><span className="badge badge-warning">Flexibility</span></td>
-                              <td>30 min morning flow</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-          
-              {/* Quick Actions */}
-              <div className="row">
-                <div className="col-12">
-                  <div className="card bg-dark">
-                    <div className="card-body">
-                      <h4 className="card-title text-white mb-4">Quick Actions</h4>
-                      <div className="row">
-                        <div className="col-md-3 col-6 mb-4">
-                          <Link to="/work" className="btn btn-block btn-outline-primary py-3">
-                            <i className="mdi mdi-dumbbell icon-lg"></i>
-                            <span className="d-block mt-2">Add Workout</span>
-                          </Link>
-                        </div>
-                        <div className="col-md-3 col-6 mb-4">
-                          <Link to="/food" className="btn btn-block btn-outline-success py-3">
-                            <i className="mdi mdi-food icon-lg"></i>
-                            <span className="d-block mt-2">Log Meal</span>
-                          </Link>
-                        </div>
-                        <div className="col-md-3 col-6 mb-4">
-                          <Link to="/reminder" className="btn btn-block btn-outline-info py-3">
-                            <i className="mdi mdi-ruler icon-lg"></i>
-                            <span className="d-block mt-2">Add Reminders</span>
-                          </Link>
-                        </div>
-                        <div className="col-md-3 col-6 mb-4">
-                          <Link to="/goals" className="btn btn-block btn-outline-warning py-3">
-                            <i className="mdi mdi-flag-checkered icon-lg"></i>
-                            <span className="d-block mt-2">Set Goal</span>
-                          </Link>
+                  
+                  <div className="row mt-4">
+                    <div className="col-12 grid-margin">
+                      <div className="card bg-dark">
+                        <div className="card-body">
+                          <h4 className="card-title text-white mb-4">Admin Dashboard</h4>
+                          <div className="row">
+                            <div className="col-md-4 mb-4">
+                              <Link to="/adminget" className="btn btn-block btn-outline-primary py-3">
+                                <i className="mdi mdi-account-multiple icon-lg"></i>
+                                <span className="d-block mt-2">Manage Users</span>
+                              </Link>
+                            </div>
+                            <div className="col-md-4 mb-4">
+                              <Link to="/foodlist" className="btn btn-block btn-outline-success py-3">
+                                <i className="mdi mdi-dumbbell icon-lg"></i>
+                                <span className="d-block mt-2">Manage Nutritions</span>
+                              </Link>
+                            </div>
+                            <div className="col-md-4 mb-4">
+                              <Link to="/progresswork" className="btn btn-block btn-outline-info py-3">
+                                <i className="mdi mdi-food icon-lg"></i>
+                                <span className="d-block mt-2">Manage Progress</span>
+                              </Link>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                </>
+              ) : (
+                <>
+                  <div className="row">
+                    <div className="col-12">
+                      <div className="welcome-banner p-4 bg-dark-gradient rounded">
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div>
+                            <h2 className="text-dark">Welcome back, Fitness Enthusiast!</h2>
+                            <p className="text-dark">Track your fitness journey and achieve your goals</p>
+                          </div>
+                          <div>
+                            <Link
+                              to="/work"
+                              className="btn mr-2"
+                              style={{ backgroundColor: '#FFC107', color: 'black' }}
+                            >
+                              <i className="mdi mdi-plus"></i> Add Workout
+                            </Link>
+                            <Link
+                              to="/food"
+                              className="btn"
+                              style={{ backgroundColor: '#FFC107', color: 'black' }}
+                            >
+                              <i className="mdi mdi-food"></i> Log Meal
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                 <div className="row mt-4">
+  {/* Calories Card */}
+  <div className="col-xl-3 col-lg-6 col-sm-6 grid-margin stretch-card">
+    <div className="card bg-dark">
+      <div className="card-body text-center">
+        <h5 className="mb-2 text-light font-weight-normal">Today's Calories</h5>
+        <h2 className="mb-4 text-white font-weight-bold">
+          {isLoading ? '...' : (statsData?.calories?.[statsData.calories.length - 1] || 0)}
+        </h2>
+        {/* PASTE CALORIES CHART CODE HERE */}
+        <div style={{ height: '150px' }}>
+          {isLoading ? (
+            <div className="d-flex justify-content-center align-items-center h-100">
+              <div className="spinner-border text-warning" role="status">
+                <span className="sr-only">Loading...</span>
               </div>
             </div>
-                      
-{/* Footer */}
- <footer style={{ backgroundColor: '#111', color: '#fff', padding: '20px 0' }}>
-      <div className="container text-center">
-        <h4 style={{ fontWeight: 'bold', color: '#FFD700', marginBottom: '10px' }}>FitTrackPro</h4>
-        <p style={{ marginBottom: '5px', fontSize: '14px' }}>
-          &copy; {new Date().getFullYear()} FitTrackPro. All rights reserved.
-        </p>
-        <p style={{ fontSize: '14px' }}>Contact: info@fittrackpro.com | +1 (409) 987–5874</p>
+          ) : (
+            <Line 
+              key={`calories-${statsData?.calories?.join('-')}`}
+              data={caloriesData} 
+              options={chartOptions} 
+            />
+          )}
+        </div>
+        <p className="mt-4 mb-0 text-muted">Remaining</p>
+        <h3 className="mb-0 font-weight-bold mt-2 text-white">
+          {isLoading ? '...' : (2500 - (statsData?.calories?.[statsData.calories.length - 1] || 0))}
+        </h3>
       </div>
-    </footer>
+    </div>
+  </div>
 
+  {/* Workouts Card */}
+  <div className="col-xl-3 col-lg-6 col-sm-6 grid-margin stretch-card">
+    <div className="card bg-dark">
+      <div className="card-body text-center">
+        <h5 className="mb-2 text-light font-weight-normal">Workouts This Week</h5>
+        <h2 className="mb-4 text-white font-weight-bold">
+          {isLoading ? '...' : (statsData?.workouts?.[1] || 0)}
+        </h2>
+        {/* PASTE WORKOUTS CHART CODE HERE */}
+        <div style={{ height: '150px' }}>
+          {isLoading ? (
+            <div className="d-flex justify-content-center align-items-center h-100">
+              <div className="spinner-border text-success" role="status">
+                <span className="sr-only">Loading...</span>
+              </div>
+            </div>
+          ) : (
+            <Bar 
+              key={`workouts-${statsData?.workouts?.join('-')}`}
+              data={workoutData} 
+              options={chartOptions} 
+            />
+          )}
+        </div>
+        <p className="mt-4 mb-0 text-muted">Last workout</p>
+        <h3 className="mb-0 font-weight-bold mt-2 text-white">
+          {isLoading ? '...' : '2 days ago'}
+        </h3>
+      </div>
+    </div>
+  </div>
 
+  {/* Weight Card */}
+  <div className="col-xl-3 col-lg-6 col-sm-6 grid-margin stretch-card">
+    <div className="card bg-dark">
+      <div className="card-body text-center">
+        <h5 className="mb-2 text-light font-weight-normal">Current Weight</h5>
+        <h2 className="mb-4 text-white font-weight-bold">
+          {isLoading ? '...' : (statsData?.weight?.[statsData.weight.length - 1]?.value || 0)} kg
+        </h2>
+        {/* PASTE WEIGHT CHART CODE HERE */}
+        <div style={{ height: '150px' }}>
+          {isLoading ? (
+            <div className="d-flex justify-content-center align-items-center h-100">
+              <div className="spinner-border text-info" role="status">
+                <span className="sr-only">Loading...</span>
+              </div>
+            </div>
+          ) : (
+            <Line 
+              key={`weight-${statsData?.weight?.map(w => w.value).join('-')}`}
+              data={weightData} 
+              options={{
+                ...chartOptions,
+                scales: {
+                  ...chartOptions.scales,
+                  y: {
+                    ...chartOptions.scales.y,
+                    min: Math.min(...(statsData?.weight?.map(w => w.value) || [0])) - 2,
+                    max: Math.max(...(statsData?.weight?.map(w => w.value) || [0])) + 2
+                  }
+                }
+              }} 
+            />
+          )}
+        </div>
+        <p className="mt-4 mb-0 text-muted">Change this month</p>
+        <h3 className="mb-0 font-weight-bold mt-2 text-white">
+          {isLoading ? '...' : '-1.2 kg'}
+        </h3>
+      </div>
+    </div>
+  </div>
+
+                    <div className="col-xl-3 col-lg-6 col-sm-6 grid-margin stretch-card">
+                      <div className="card bg-dark">
+                        <div className="card-body text-center">
+                          <h5 className="mb-2 text-light font-weight-normal">Water Intake</h5>
+                          <h2 className="mb-4 text-white font-weight-bold">
+                            {isLoading ? '...' : (statsData?.water?.current || 0)} L
+                          </h2>
+                          <div style={{ height: '150px' }}>
+                            {isLoading ? (
+                              <div className="d-flex justify-content-center align-items-center h-100">
+                                <div className="spinner-border text-warning" role="status">
+                                  <span className="sr-only">Loading...</span>
+                                </div>
+                              </div>
+                            ) : (
+                              <Bar data={waterData} options={{...chartOptions, indexAxis: 'y'}} />
+                            )}
+                          </div>
+                          <p className="mt-4 mb-0 text-muted">Daily goal</p>
+                          <h3 className="mb-0 font-weight-bold mt-2 text-white">
+                            {isLoading ? '...' : (statsData?.water?.goal || 2.5)} L
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+   
+                  <div className="row">
+                    <div className="col-12 grid-margin">
+                      <div className="card bg-dark">
+                        <div className="card-body">
+                          <div className="d-flex justify-content-between align-items-center mb-4">
+                            <h4 className="card-title text-white">Recent Activity</h4>
+                            <Link to="/activity" className="btn btn-sm btn-outline-light">View All</Link>
+                          </div>
+                          <div className="table-responsive">
+                            <table className="table table-dark">
+                              <thead>
+                                <tr>
+                                  <th>Date</th>
+                                  <th>Activity</th>
+                                  <th>Type</th>
+                                  <th>Details</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>Today, 08:30 AM</td>
+                                  <td>Morning Run</td>
+                                  <td><span className="badge badge-primary">Cardio</span></td>
+                                  <td>5.2 km in 28:15</td>
+                                </tr>
+                                <tr>
+                                  <td>Yesterday, 07:15 PM</td>
+                                  <td>Chest & Triceps</td>
+                                  <td><span className="badge badge-success">Strength</span></td>
+                                  <td>12 exercises, 45 min</td>
+                                </tr>
+                                <tr>
+                                  <td>Yesterday, 12:30 PM</td>
+                                  <td>Lunch</td>
+                                  <td><span className="badge badge-info">Nutrition</span></td>
+                                  <td>Grilled chicken, rice, veggies - 650 kcal</td>
+                                </tr>
+                                <tr>
+                                  <td>2 days ago, 06:45 AM</td>
+                                  <td>Yoga Session</td>
+                                  <td><span className="badge badge-warning">Flexibility</span></td>
+                                  <td>30 min morning flow</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+              
+                  <div className="row">
+                    <div className="col-12">
+                      <div className="card bg-dark">
+                        <div className="card-body">
+                          <h4 className="card-title text-white mb-4">Quick Actions</h4>
+                          <div className="row">
+                            <div className="col-md-3 col-6 mb-4">
+                              <Link to="/work" className="btn btn-block btn-outline-primary py-3">
+                                <i className="mdi mdi-dumbbell icon-lg"></i>
+                                <span className="d-block mt-2">Add Workout</span>
+                              </Link>
+                            </div>
+                            <div className="col-md-3 col-6 mb-4">
+                              <Link to="/food" className="btn btn-block btn-outline-success py-3">
+                                <i className="mdi mdi-food icon-lg"></i>
+                                <span className="d-block mt-2">Log Meal</span>
+                              </Link>
+                            </div>
+                            <div className="col-md-3 col-6 mb-4">
+                              <Link to="/reminder" className="btn btn-block btn-outline-info py-3">
+                                <i className="mdi mdi-ruler icon-lg"></i>
+                                <span className="d-block mt-2">Add Reminders</span>
+                              </Link>
+                            </div>
+                            <div className="col-md-3 col-6 mb-4">
+                              <Link to="/goals" className="btn btn-block btn-outline-warning py-3">
+                                <i className="mdi mdi-flag-checkered icon-lg"></i>
+                                <span className="d-block mt-2">Set Goal</span>
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+                      
+            <footer style={{ backgroundColor: '#111', color: '#fff', padding: '20px 0' }}>
+              <div className="container text-center">
+                <h4 style={{ fontWeight: 'bold', color: '#FFD700', marginBottom: '10px' }}>FitTrackPro</h4>
+                <p style={{ marginBottom: '5px', fontSize: '14px' }}>
+                  &copy; {new Date().getFullYear()} FitTrackPro. All rights reserved.
+                </p>
+                <p style={{ fontSize: '14px' }}>Contact: info@fittrackpro.com | +1 (409) 987–5874</p>
+              </div>
+            </footer>
           </div>
         </div>
       </div>
