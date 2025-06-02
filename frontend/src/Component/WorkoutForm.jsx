@@ -12,12 +12,18 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
   const [duration, setDuration] = useState('');
   const [date, setDate] = useState('');
   const [currentUserId, setCurrentUserId] = useState(propUserId || null);
-  const [searchTerm, setSearchTerm] = useState('');
-
   const [userEmail, setUserEmail] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  const workoutOptions = {
+    "Strength Training": ["Bench Press", "Deadlift", "Squats"],
+    "Cardio": ["Running", "Cycling", "Jump Rope"],
+    "Yoga": ["Hatha Yoga", "Vinyasa", "Power Yoga"],
+    "HIIT": ["Burpees", "Jump Squats", "Mountain Climbers"],
+    "Other": ["Custom Activity"]
+  };
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user_information'));
@@ -32,7 +38,6 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
       setCaloriesBurned(workout.caloriesBurned || '');
       setDuration(workout.duration || '');
       setDate(workout.date ? new Date(workout.date).toISOString().slice(0, 16) : '');
-      setSearchTerm(workout.name || '');
     } else if (userData) {
       const savedData = JSON.parse(localStorage.getItem(`formData_${userData._id}`));
       if (savedData) {
@@ -41,10 +46,15 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
         setCaloriesBurned(savedData.caloriesBurned || '');
         setDuration(savedData.duration || '');
         setDate(savedData.date || '');
-        setSearchTerm(savedData.searchTerm || '');
       }
     }
   }, [workout]);
+
+  const handleWorkoutTypeChange = (e) => {
+    const selectedType = e.target.value;
+    setWorkoutType(selectedType);
+    setName(''); // Clear the workout name when type changes
+  };
 
   const handleLogout = () => {
     const confirmed = window.confirm("Are you sure you want to logout?");
@@ -61,42 +71,6 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
     setCaloriesBurned('');
     setDuration('');
     setDate('');
-    setSearchTerm('');
-  };
-
-  const fetchNutritionData = async () => {
-    if (!searchTerm || !duration) {
-      toast.warning("Please enter both workout name and duration.");
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        "https://trackapi.nutritionix.com/v2/natural/exercise",
-        {
-          query: `${searchTerm} for ${duration} minutes`
-        },
-        {
-          headers: {
-            "x-app-id": "69c4e115",
-            "x-app-key": "0f222905a55e160c86da2bf8120434de",
-            "Content-Type": "application/json"
-          }
-        }
-      );
-
-      if (response.data.exercises && response.data.exercises.length > 0) {
-        const cal = response.data.exercises[0].nf_calories;
-        setCaloriesBurned(cal.toFixed(0));
-        setName(searchTerm);
-        toast.success("Calories estimated successfully!");
-      } else {
-        toast.warning("No data found for this workout.");
-      }
-    } catch (error) {
-      console.error("Error fetching calories:", error);
-      toast.error("Failed to fetch calories.");
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -134,8 +108,6 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
       toast.error(error.response?.data?.msg || "Error saving workout data.");
     }
   };
-
-  const handleSearchChange = (e) => setSearchTerm(e.target.value);
 
   if (!userEmail) return null;
 
@@ -201,29 +173,45 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
       <div className="container-fluid page-body-wrapper" style={{ paddingTop: 80 }}>
         <h3>{workout ? "Update workout" : "Add New workout"}</h3>
         <form onSubmit={handleSubmit} style={{ maxWidth: '500px' }}>
-          <label>Workout Name:</label>
-          <input type="text" value={searchTerm} onChange={handleSearchChange} placeholder="e.g. jogging" required />
-
           <label>Workout Type:</label>
-          <select value={workoutType} onChange={(e) => setWorkoutType(e.target.value)} required>
+          <select value={workoutType} onChange={handleWorkoutTypeChange} required>
             <option value="">Select</option>
-            <option value="Strength Training">Strength Training</option>
-            <option value="Cardio">Cardio</option>
-            <option value="Yoga">Yoga</option>
-            <option value="HIIT">HIIT</option>
-            <option value="Other">Other</option>
+            {Object.keys(workoutOptions).map((type) => (
+              <option key={type} value={type}>{type}</option>
+            ))}
           </select>
 
-          <button type="button" onClick={fetchNutritionData}>Search</button>
+          <label>Workout Name:</label>
+          <select value={name} onChange={(e) => setName(e.target.value)} required>
+            <option value="">Select</option>
+            {workoutOptions[workoutType]?.map((workoutName) => (
+              <option key={workoutName} value={workoutName}>{workoutName}</option>
+            ))}
+          </select>
 
           <label>Duration (minutes):</label>
-          <input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} required />
+          <input
+            type="number"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            required
+          />
 
           <label>Calories Burned:</label>
-          <input type="number" value={caloriesBurned} onChange={(e) => setCaloriesBurned(e.target.value)} required />
+          <input
+            type="number"
+            value={caloriesBurned}
+            onChange={(e) => setCaloriesBurned(e.target.value)}
+            required
+          />
 
           <label>Date & Time:</label>
-          <input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} required />
+          <input
+            type="datetime-local"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
 
           <button type="submit">{workout ? "Update workout" : "Save Workout"}</button>
         </form>

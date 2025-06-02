@@ -11,7 +11,7 @@ if (!process.env.PORT) {
     process.exit(1);
 }
 
-let port_no = process.env.PORT||3001;
+let port_no = process.env.PORT;
 let app = express();
 
 // Enable CORS to allow cross-origin requests
