@@ -24,7 +24,19 @@ router.get('/progress', async (req, res) => {
   }
 });
 
-// DELETE - Delete one progress entry
+// ✅ NEW: GET progress entries for a specific user
+router.get('/userprofile/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const userProgress = await Progress.find({ userId });
+    res.json(userProgress);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch user progress' });
+  }
+});
+
+// DELETE - Delete one progress entry by ID
 router.delete('/progress/:id', async (req, res) => {
   try {
     await Progress.findByIdAndDelete(req.params.id);
@@ -35,8 +47,3 @@ router.delete('/progress/:id', async (req, res) => {
 });
 
 module.exports = router;
-
-
-
-
-

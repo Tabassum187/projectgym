@@ -126,7 +126,20 @@ let user_function = {
       return res.status(501).json({ msg: error.message });
     }
   },
-
+// Update user height and weight
+updateBMI :  async function(req, res) {
+  try {
+    const updated = await User.findByIdAndUpdate(
+      req.params.id,
+      { height: req.body.height, weight: req.body.weight },
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+},
   login: async function (req, res) {
     try {
       let { email, password } = req.body;
@@ -222,7 +235,7 @@ let user_function = {
     } catch (err) {
       res.status(500).json({ msg: err.message });
     }
-  },
+  }  ,
 
   updateFood: async (req, res) => {
     try {

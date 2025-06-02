@@ -1,18 +1,28 @@
 let express = require("express");
 let r = express.Router();
 let user_logic = require("../controller/user_logic");
-
+let User = require("../collection/User")
 
 
 
 // -------- Existing Routes --------
+r.get('/userprofile/:id', async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id).select('height weight bmi_index');
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      res.json(user);
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+      res.status(500).json({ error: err.message });
+    }
+  });
 r.post("/user", user_logic.register);
 r.get("/getuser", user_logic.get_all_user);
 r.delete("/getuser/:id", user_logic.delete_user);
 r.put("/getuser/:id", user_logic.update_record);
 r.post("/log", user_logic.login);
 r.post("/fp", user_logic.forgetpassword);
-
+r.put('/userprofile/:id',user_logic.updateBMI)
 
 // -------- NEW: Workout Routes --------
 r.get("/workout", user_logic.getWorkout);

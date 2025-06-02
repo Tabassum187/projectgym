@@ -53,13 +53,21 @@ const FoodList = () => {
   }, []);
 
   const fetchFoodLogs = async () => {
+    const user = JSON.parse(localStorage.getItem("user_information"));
+    if (!user || !user._id) return;
+  
     try {
-      const res = await axios.get('http://localhost:3001/gym/foods');
-      setFoodLogs(res.data);
-    } catch (error) {
-      console.error("Error fetching food logs:", error);
+      const response = await axios.get(`http://localhost:3001/gym/foods`, {
+        params: { userId: user._id },
+      });
+      console.log(user)
+      console.log(response.data)
+      setFoodLogs(response.data);
+    } catch (err) {
+      console.error("Failed to fetch food logs", err);
     }
   };
+  
 
   const handleDelete = async (id) => {
     if (window.confirm('Delete this food log?')) {

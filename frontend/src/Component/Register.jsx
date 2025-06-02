@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../style/Register.module.css';
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
@@ -20,6 +20,17 @@ export default function Register() {
   let [diabities, setDiabities] = useState("");
 
   let navigate = useNavigate();
+
+  // Auto calculate BMI when height or weight changes
+  useEffect(() => {
+    if (height > 0 && weight > 0) {
+      const heightInMeters = height / 100;
+      const bmi = weight / (heightInMeters * heightInMeters);
+      setBmiIndex(bmi.toFixed(2));
+    } else {
+      setBmiIndex("");
+    }
+  }, [height, weight]);
 
   let clear = () => {
     setName(""); setEmail(""); setPswd(""); setGender(""); setAge(0);
@@ -113,7 +124,7 @@ export default function Register() {
           <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} />
 
           <label>BMI Index</label>
-          <input type="text" value={bmi_index} onChange={(e) => setBmiIndex(e.target.value)} />
+          <input type="text" value={bmi_index} readOnly />
 
           <label>Target Weight (kg)</label>
           <input type="number" value={target_weight} onChange={(e) => setTargetWeight(e.target.value)} />
@@ -139,13 +150,12 @@ export default function Register() {
         <div style={{ gridColumn: "1 / -1", textAlign: "center" }}>
           <button type="submit">Register Now</button>
 
-         <p style={{ marginTop: "1rem", color: "white", fontSize: "1.1rem" }}>
-  Already have an account?{" "}
-  <Link to="/login" style={{ color: "#4caf50", textDecoration: "underline", fontSize: "1.1rem" }}>
-    Login now
-  </Link>
-</p>
-
+          <p style={{ marginTop: "1rem", color: "white", fontSize: "1.1rem" }}>
+            Already have an account?{" "}
+            <Link to="/login" style={{ color: "#4caf50", textDecoration: "underline", fontSize: "1.1rem" }}>
+              Login now
+            </Link>
+          </p>
         </div>
       </form>
     </div>

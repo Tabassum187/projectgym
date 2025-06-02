@@ -26,6 +26,7 @@ import Adminget from './Component/Adminget';
 import StepForm from './Component/Stepform';
 import StepList from './Component/Steplist';
 import WorkoutList from './Component/WorkoutList';
+import UpdateProfile from './Component/UpdateProfile';
 
 
 
@@ -86,7 +87,8 @@ function App() {
          
           <Route path="/stepform" element={<StepForm />} />
           <Route path="/steplist" element={<StepList />} />
-          
+          <Route path="/update-profile" element={<UpdateProfile />} />
+
     
         
         </Routes>

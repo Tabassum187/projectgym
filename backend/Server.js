@@ -7,7 +7,7 @@ const socketIo = require('socket.io');
 require('dotenv').config();
 
      // adjust path as per your project
-const progressRoutes = require('./Route/progress_route');
+     const progressRoutes = require('./Route/progress_route');
 const foodRoutes = require('./Route/foodRoutes');
 const reminderRoutes = require('./Route/reminderRoutes');
 const workoutRoute = require('./Route/workout_route'); 
@@ -40,8 +40,9 @@ app.use(express.json());
 
 // Routes
 
-app.use('/api/progress', progressRoutes);
+app.use('/gym/progress/', progressRoutes);
 app.use('/gym', foodRoutes);
+app.use('/api/progress', progressRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/gym', workoutRoute); 
 app.use('/api',stepRoutes); 
