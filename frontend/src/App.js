@@ -25,6 +25,7 @@ import User from './Component/Outlet/User';
 import Adminget from './Component/Adminget';
 import StepForm from './Component/Stepform';
 import StepList from './Component/Steplist';
+import WorkoutList from './Component/WorkoutList';
 
 
 
@@ -70,6 +71,8 @@ function App() {
           <Route path='/pro' element={<ProgressForm />} />
           <Route path='/progresslist' element={<ProgressList />} />
           <Route path='/work' element={<WorkoutForm />} />
+          <Route path='/worklist' element={<WorkoutList />} />
+
           <Route path='/food' element={<FoodForm />} />
           <Route path='/foodlist' element={<FoodList />} />
           <Route path='/fooditem' element={<FoodItem />} />

@@ -152,35 +152,42 @@ let user_function = {
   // -------- WORKOUT ROUTES --------
   addWorkout: async (req, res) => {
     try {
-      console.log("Workout request body:", req.body); // 🔍 Add this
-      const { userId, exercises } = req.body;
-  
-      const newWorkout = new Workout({ userId, exercises });
-      await newWorkout.save();
-  
-      res.status(201).json({ msg: "Workout saved", data: newWorkout });
-    } catch (err) {
-      console.error("Workout save error:", err); // 🔍 Add this
-      res.status(500).json({ msg: err.message });
-    }
-  },
-  
+      const { userId, name, workoutType, duration, caloriesBurned } = req.body;
 
-  getWorkouts: async (req, res) => {
-    try {
-      const { userId } = req.query;
-      const workouts = await Workout.find({ userId });
-      res.json(workouts);
+      const newWorkout = new Workout({
+        userId,
+        name,
+        workoutType,
+        duration,
+        caloriesBurned,
+      });
+
+      await newWorkout.save();
+      res.status(201).json({ msg: "Workout log saved", data: newWorkout });
     } catch (err) {
       res.status(500).json({ msg: err.message });
     }
   },
+
+ getWorkout: async (req, res) => {
+  try {
+    const { userId } = req.query;
+    console.log('Received userId:', userId);
+    const filter = userId ? { userId } : {};
+    const workouts = await Workout.find(filter);
+    console.log('Found workouts:', workouts);
+    res.json(workouts);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+},
+
 
   updateWorkout: async (req, res) => {
     try {
       const { id } = req.params;
       const updatedWorkout = await Workout.findByIdAndUpdate(id, req.body, { new: true });
-      res.json({ msg: "Workout updated", data: updatedWorkout });
+      res.json({ msg: "Workout log updated", data: updatedWorkout });
     } catch (err) {
       res.status(500).json({ msg: err.message });
     }
@@ -190,12 +197,11 @@ let user_function = {
     try {
       const { id } = req.params;
       await Workout.findByIdAndDelete(id);
-      res.json({ msg: "Workout deleted" });
+      res.json({ msg: "Workout log deleted" });
     } catch (err) {
       res.status(500).json({ msg: err.message });
     }
   },
-
   // -------- FOOD LOG ROUTES --------
   addFood: async (req, res) => {
     try {

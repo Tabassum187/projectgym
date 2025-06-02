@@ -15,10 +15,10 @@ r.post("/fp", user_logic.forgetpassword);
 
 
 // -------- NEW: Workout Routes --------
-r.get("/workouts", user_logic.getWorkouts);      // get all workouts
-r.post("/workouts", user_logic.addWorkout);      // add a new workout
-r.put("/workouts/:id", user_logic.updateWorkout); // update workout
-r.delete("/workouts/:id", user_logic.deleteWorkout); // delete workout
+r.get("/workout", user_logic.getWorkout);
+r.post("/workout", user_logic.addWorkout);        
+r.put("/workout/:id", user_logic.updateWorkout); 
+r.delete("/workout/:id", user_logic.deleteWorkout);  // delete workout
 
 // -------- NEW: Food Routes --------
 r.get("/foods", user_logic.getFoods);       // get all food logs
