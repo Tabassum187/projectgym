@@ -46,7 +46,6 @@ const FoodList = () => {
     const [showProgress, setShowProgress] = useState(false);
     const [showsteps, setShowsteps] = useState(false);
 
-  const userName = localStorage.getItem('userName') || 'User';
 
   useEffect(() => {
     fetchFoodLogs();

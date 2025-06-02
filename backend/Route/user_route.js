@@ -31,7 +31,8 @@ r.put("/workout/:id", user_logic.updateWorkout);
 r.delete("/workout/:id", user_logic.deleteWorkout);  // delete workout
 
 // -------- NEW: Food Routes --------
-r.get("/foods", user_logic.getFoods);       // get all food logs
+r.get("/foods", user_logic.getFoods);  
+r.get("/foods/:userId", user_logic.getUserWiseFoods);       // get all food logs     // get all food logs
 r.post("/foods", user_logic.addFood);       // add food log
 r.put("/foods/:id", user_logic.updateFood); // update food log
 r.delete("/foods/:id", user_logic.deleteFood); // delete food log

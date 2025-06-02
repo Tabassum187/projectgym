@@ -1,19 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { Link, useNavigate } from 'react-router-dom';
 import '../style/WorkoutForm.module.css';
 
-const APP_ID = '69c4e115';
-const API_KEY = '0f222905a55e160c86da2bf8120434de';
-
 export default function WorkoutForm({ workout = null, userId: propUserId, onSave }) {
-  const [showWorkout, setShowWorkout] = useState(false);
-  const [showNutrition, setShowNutrition] = useState(false);
-  const [showProgress, setShowProgress] = useState(false);
-  const [showSteps, setShowSteps] = useState(false);
-
   const [name, setName] = useState('');
   const [workoutType, setWorkoutType] = useState('Strength Training');
   const [caloriesBurned, setCaloriesBurned] = useState('');
@@ -21,18 +13,29 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
   const [date, setDate] = useState('');
   const [currentUserId, setCurrentUserId] = useState(propUserId || null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [username, setUsername] = useState('');
+
+  const [userEmail, setUserEmail] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user_information'));
     if (userData) {
-      const userId = userData._id;
-      setCurrentUserId(userId);
-      setUsername(userData.username || userData.name || 'User');
+      setCurrentUserId(userData._id);
+      setUserEmail(userData.email || '');
+    }
 
-      const savedData = JSON.parse(localStorage.getItem(`formData_${userId}`));
-      if (savedData && !workout) {
+    if (workout) {
+      setName(workout.name || '');
+      setWorkoutType(workout.workoutType || 'Strength Training');
+      setCaloriesBurned(workout.caloriesBurned || '');
+      setDuration(workout.duration || '');
+      setDate(workout.date ? new Date(workout.date).toISOString().slice(0, 16) : '');
+      setSearchTerm(workout.name || '');
+    } else if (userData) {
+      const savedData = JSON.parse(localStorage.getItem(`formData_${userData._id}`));
+      if (savedData) {
         setName(savedData.name || '');
         setWorkoutType(savedData.workoutType || 'Strength Training');
         setCaloriesBurned(savedData.caloriesBurned || '');
@@ -41,20 +44,16 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
         setSearchTerm(savedData.searchTerm || '');
       }
     }
-
-    if (workout) {
-      setName(workout.name || '');
-      setWorkoutType(workout.WorkoutType || 'Strength Training');
-      setCaloriesBurned(workout.caloriesBurned || '');
-      setDuration(workout.Duration || '');
-      setDate(workout.date ? new Date(workout.date).toISOString().slice(0, 16) : '');
-      setSearchTerm(workout.name || '');
-    }
   }, [workout]);
 
-  useEffect(() => {
-    console.log("Current User ID:", currentUserId);
-  }, [currentUserId]);
+  const handleLogout = () => {
+    const confirmed = window.confirm("Are you sure you want to logout?");
+    if (confirmed) {
+      localStorage.removeItem("user_information");
+      setUserEmail(null);
+      navigate('/login');
+    }
+  };
 
   const clearForm = () => {
     setName('');
@@ -65,6 +64,41 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
     setSearchTerm('');
   };
 
+  const fetchNutritionData = async () => {
+    if (!searchTerm || !duration) {
+      toast.warning("Please enter both workout name and duration.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "https://trackapi.nutritionix.com/v2/natural/exercise",
+        {
+          query: `${searchTerm} for ${duration} minutes`
+        },
+        {
+          headers: {
+            "x-app-id": "69c4e115",
+            "x-app-key": "0f222905a55e160c86da2bf8120434de",
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      if (response.data.exercises && response.data.exercises.length > 0) {
+        const cal = response.data.exercises[0].nf_calories;
+        setCaloriesBurned(cal.toFixed(0));
+        setName(searchTerm);
+        toast.success("Calories estimated successfully!");
+      } else {
+        toast.warning("No data found for this workout.");
+      }
+    } catch (error) {
+      console.error("Error fetching calories:", error);
+      toast.error("Failed to fetch calories.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -73,10 +107,7 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
       return;
     }
 
-    if (!currentUserId) {
-      toast.error("User not logged in.");
-      return;
-    }
+    const isoDate = new Date(date).toISOString();
 
     const workoutData = {
       userId: currentUserId,
@@ -84,7 +115,7 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
       workoutType,
       caloriesBurned: Number(caloriesBurned),
       duration: Number(duration),
-      date: new Date(date).toISOString()
+      date: isoDate,
     };
 
     try {
@@ -99,214 +130,103 @@ export default function WorkoutForm({ workout = null, userId: propUserId, onSave
       localStorage.removeItem(`formData_${currentUserId}`);
       if (onSave) onSave();
     } catch (error) {
-      console.log('Submitting workout:', workoutData);
+      console.error('Error submitting workout:', workoutData);
       toast.error(error.response?.data?.msg || "Error saving workout data.");
     }
   };
 
-  const handleLogout = (e) => {
-    e.preventDefault();
-    if (window.confirm("Are you sure you want to logout?")) {
-      const userData = JSON.parse(localStorage.getItem("user_information"));
-      if (userData) {
-        const userId = userData._id;
-        const formState = {
-          name,
-          workoutType,
-          caloriesBurned,
-          duration,
-          date,
-          searchTerm,
-        };
-        localStorage.setItem(`formData_${userId}`, JSON.stringify(formState));
-      }
+  const handleSearchChange = (e) => setSearchTerm(e.target.value);
 
-      localStorage.removeItem("user_information");
-      navigate("/login");
-    }
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const fetchNutritionData = async () => {
-    if (!searchTerm.trim()) {
-      toast.error("Please enter a workout name to search.");
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        'https://trackapi.nutritionix.com/v2/natural/exercise',
-        { query: searchTerm },
-        {
-          headers: {
-            'x-app-id': APP_ID,
-            'x-app-key': API_KEY,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      const workoutData = response.data.exercises[0];
-      if (workoutData) {
-        setName(workoutData.name || searchTerm);
-        setDuration(workoutData.duration_min);
-        setCaloriesBurned(workoutData.nf_calories);
-        toast.success("Workout info fetched!");
-      } else {
-        toast.error("No workout info found.");
-      }
-    } catch (error) {
-      console.error("Nutritionix API error:", error);
-      toast.error("Failed to fetch data from Workout.");
-    }
-  };
+  if (!userEmail) return null;
 
   return (
     <div className="dark-theme">
-      <div className="container-scroller">
-        <nav className="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex align-items-center justify-content-between" style={{ backgroundColor: "#121212" }}>
-          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-            <Link className="navbar-brand brand-logo" to="/" style={{ color: "yellow", fontSize: "30px", fontWeight: "bold", textDecoration: "none" }}>
-              <span className="text-warning">🏋️‍♀️FitTrack</span>Pro💪
-            </Link>
-          </div>
-          <div className="navbar-menu-wrapper d-flex align-items-center justify-content-end flex-grow-0">
-            <ul className="navbar-nav navbar-nav-right d-flex align-items-center">
-              <li className="nav-item text-white mr-3">👤 {username}</li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/notifications">
-                  <i className="mdi mdi-bell-outline text-white"></i>
-                  <span className="count-symbol bg-danger"></span>
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </nav>
+      <ToastContainer position="bottom-right" autoClose={3000} />
 
-        <div className="container-fluid page-body-wrapper" style={{ display: 'flex' }}>
-          <nav className="sidebar sidebar-offcanvas" id="sidebar" style={{ backgroundColor: "#121212", paddingTop: "5px", minWidth: '220px', height: '100vh', position: 'fixed', top: '46px', left: 0 }}>
-            <ul className="nav flex-column" style={{ paddingBottom: "15px" }}>
-              <li className="nav-item section-header mb-1">
-                <span className="nav-link text-muted text-uppercase small font-weight-bold">
-                  <span className="menu-title" style={{ fontSize: "15px" }}>Main Menu</span>
-                </span>
-              </li>
-              <li className="nav-item mb-1">
-                <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/dashboard">📊 Dashboard</Link>
-              </li>
-              <li className="nav-item mb-1">
-                <div className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center" style={{ fontSize: "15.5px", cursor: "pointer" }} onClick={() => setShowWorkout(!showWorkout)}>
-                  🏋️ Workouts <span>{showWorkout ? "▲" : "▼"}</span>
+      {/* Navbar */}
+      <nav className="navbar default-layout-navbar fixed-top d-flex justify-content-between" style={{ backgroundColor: "#121212" }}>
+        <div className="d-flex align-items-center pl-3">
+          <a className="navbar-brand" href="/dashboard" style={{ fontWeight: 'bold' }}>
+            <h2 className="text-white m-0">FitTrack<span style={{ color: '#FFD700' }}>Pro</span></h2>
+          </a>
+        </div>
+        <div className="d-flex align-items-center pr-3">
+          <Link className="nav-link text-white" to="/notifications">
+            <i className="mdi mdi-bell-outline"></i>
+          </Link>
+          <div className="nav-item ml-3 position-relative" ref={dropdownRef}>
+            <div onClick={() => setDropdownOpen(!dropdownOpen)} className="d-flex align-items-center text-white" style={{ cursor: 'pointer' }}>
+              <div
+                style={{
+                  width: 32, height: 32, borderRadius: '50%', backgroundColor: '#FFD700',
+                  color: '#121212', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', fontWeight: 'bold', marginRight: 8, fontSize: 16
+                }}
+              >
+                {userEmail.charAt(0)}
+              </div>
+              <i className="mdi mdi-menu-down ml-2" style={{ fontSize: 20 }} />
+            </div>
+            {dropdownOpen && (
+              <div style={{
+                position: 'absolute', top: '100%', right: 0, backgroundColor: '#1e1e1e',
+                borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.5)', marginTop: 8,
+                minWidth: 180, zIndex: 1000, padding: '8px 0'
+              }}>
+                <div
+                  className="dropdown-item d-flex align-items-center"
+                  style={{ padding: '10px 20px', color: 'white', cursor: 'pointer', fontSize: 15 }}
+                  onClick={() => {
+                    if (userEmail === "admin@gmail.com") navigate("/adminget");
+                    else toast.info("Profile feature coming soon!");
+                    setDropdownOpen(false);
+                  }}
+                >
+                  👤 {userEmail === "admin@gmail.com" ? "Admin Panel" : "Profile"}
                 </div>
-                {showWorkout && (
-                  <div className="pl-3">
-                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/work">➕ Add Workout</Link>
-                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/worklist">➕ View WorkoutList</Link>
-                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/">📋 View Workout</Link>
-                  </div>
-                )}
-              </li>
-              <li className="nav-item mb-1">
-                <div className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center" style={{ fontSize: "15.5px", cursor: "pointer" }} onClick={() => setShowNutrition(!showNutrition)}>
-                  🍎 Nutrition <span>{showNutrition ? "▲" : "▼"}</span>
+                <div
+                  className="dropdown-item d-flex align-items-center"
+                  style={{ padding: '10px 20px', color: 'white', cursor: 'pointer', borderTop: '1px solid #333', fontSize: 15 }}
+                  onClick={handleLogout}
+                >
+                  🔓 Logout
                 </div>
-                {showNutrition && (
-                  <div className="pl-3">
-                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/food">➕ Add Meal</Link>
-                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/foodlist">📖 View Diet Plan</Link>
-                  </div>
-                )}
-              </li>
-              <li className="nav-item mb-1">
-                <div className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center" style={{ fontSize: "15.5px", cursor: "pointer" }} onClick={() => setShowProgress(!showProgress)}>
-                  📈 Progress <span>{showProgress ? "▲" : "▼"}</span>
-                </div>
-                {showProgress && (
-                  <div className="pl-3">
-                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/pro">➕ Add Progress</Link>
-                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="/progresslist">👀 View Progress</Link>
-                  </div>
-                )}
-              </li>
-              <li className="nav-item mb-1">
-                <div className="nav-link text-white font-weight-bold d-flex justify-content-between align-items-center" style={{ fontSize: "15.5px", cursor: "pointer" }} onClick={() => setShowSteps(!showSteps)}>
-                  📈 Step Count<span>{showSteps ? "▲" : "▼"}</span>
-                </div>
-                {showSteps && (
-                  <div className="pl-3">
-                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">➕ Add Steps</Link>
-                    <Link className="nav-link text-white py-1" style={{ fontSize: "14px" }} to="">👀 View Steps</Link>
-                  </div>
-                )}
-              </li>
-              <li className="nav-item mb-1">
-                <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/goals">🎯 Goals</Link>
-              </li>
-              <li className="nav-item mb-1">
-                <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/reminder">🚨 Reminders</Link>
-              </li>
-              <li className="nav-item section-header mt-2 mb-1">
-                <span className="nav-link text-muted text-uppercase small font-weight-bold">
-                  <span className="menu-title" style={{ fontSize: "15px" }}>Others</span>
-                </span>
-              </li>
-              <li className="nav-item mb-1">
-                <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/settings">⚙️ Settings</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-white font-weight-bold" style={{ fontSize: "15.5px" }} to="/support">❓ Support</Link>
-              </li>
-            </ul>
-          </nav>
-
-          <div style={{ marginLeft: '220px', padding: '20px', width: '100%' }}>
-            <ToastContainer position="bottom-right" autoClose={3000} />
-            <h3>{workout ? "Update workout" : "Add New workout"}</h3>
-            <form onSubmit={handleSubmit} style={{ maxWidth: '500px' }}>
-              <label>Select Workout:</label>
-              <select value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '8px', marginBottom: '10px' }}>
-                <option value="">-- Choose a workout --</option>
-                <option value="Strength Training">Strength Training</option>
-                <option value="Yoga">Yoga</option>
-                <option value="HIIT">HIIT</option>
-                <option value="Walking">Cardio</option>
-              </select>
-
-              <label>Or Enter Workout Name:</label>
-              <input type="text" value={searchTerm} onChange={handleSearchChange} placeholder="e.g. brisk walk" required style={{ width: '100%', padding: '8px', marginBottom: '10px' }} />
-
-              <label>Workout Type:</label>
-              <select value={workoutType} onChange={e => setWorkoutType(e.target.value)} required style={{ width: '100%', padding: '8px', marginBottom: '10px' }}>
-                <option value="">Select</option>
-                <option value="Strength Training">Strength Training</option>
-                <option value="Cardio">Cardio</option>
-                <option value="Yoga">Yoga</option>
-                <option value="HIIT">HIIT</option>
-                <option value="Other">Other</option>
-              </select>
-
-              <button type="button" onClick={fetchNutritionData} style={{ marginBottom: '10px' }}>
-                Search
-              </button>
-
-              <label>Duration (minutes):</label>
-              <input type="number" value={duration} onChange={e => setDuration(e.target.value)} required style={{ width: '100%', padding: '8px', marginBottom: '10px' }} />
-
-              <label>Calories Burned:</label>
-              <input type="number" value={caloriesBurned} onChange={e => setCaloriesBurned(e.target.value)} required style={{ width: '100%', padding: '8px', marginBottom: '10px' }} />
-
-              <label>Date & Time:</label>
-              <input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} required style={{ width: '100%', padding: '8px', marginBottom: '10px' }} />
-
-              <button type="submit" style={{ padding: '10px 20px' }}>
-                {workout ? "Update workout" : "Save Workout"}
-              </button>
-            </form>
+              </div>
+            )}
           </div>
         </div>
+      </nav>
+
+      {/* Form */}
+      <div className="container-fluid page-body-wrapper" style={{ paddingTop: 80 }}>
+        <h3>{workout ? "Update workout" : "Add New workout"}</h3>
+        <form onSubmit={handleSubmit} style={{ maxWidth: '500px' }}>
+          <label>Workout Name:</label>
+          <input type="text" value={searchTerm} onChange={handleSearchChange} placeholder="e.g. jogging" required />
+
+          <label>Workout Type:</label>
+          <select value={workoutType} onChange={(e) => setWorkoutType(e.target.value)} required>
+            <option value="">Select</option>
+            <option value="Strength Training">Strength Training</option>
+            <option value="Cardio">Cardio</option>
+            <option value="Yoga">Yoga</option>
+            <option value="HIIT">HIIT</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <button type="button" onClick={fetchNutritionData}>Search</button>
+
+          <label>Duration (minutes):</label>
+          <input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} required />
+
+          <label>Calories Burned:</label>
+          <input type="number" value={caloriesBurned} onChange={(e) => setCaloriesBurned(e.target.value)} required />
+
+          <label>Date & Time:</label>
+          <input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} required />
+
+          <button type="submit">{workout ? "Update workout" : "Save Workout"}</button>
+        </form>
       </div>
     </div>
   );

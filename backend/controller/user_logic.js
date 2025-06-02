@@ -129,17 +129,18 @@ let user_function = {
 // Update user height and weight
 updateBMI :  async function(req, res) {
   try {
-    const updated = await User.findByIdAndUpdate(
+    const updated = await user.findByIdAndUpdate(
       req.params.id,
-      { height: req.body.height, weight: req.body.weight },
+      { height: req.body.height, weight: req.body.weight,bmi:req.body.bmi_index },
       { new: true }
     );
     res.json(updated);
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: 'Failed to update profile' });
+    res.status(500).json({ error: err.message});
   }
 },
+
   login: async function (req, res) {
     try {
       let { email, password } = req.body;
@@ -165,36 +166,38 @@ updateBMI :  async function(req, res) {
   // -------- WORKOUT ROUTES --------
   addWorkout: async (req, res) => {
     try {
-      const { userId, name, workoutType, duration, caloriesBurned } = req.body;
-
+      // ✅ Include `date` in the destructuring
+      const { userId, name, workoutType, duration, caloriesBurned, date } = req.body;
+  
       const newWorkout = new Workout({
         userId,
         name,
         workoutType,
         duration,
         caloriesBurned,
+        date, // ✅ Add this line
       });
-
+  
       await newWorkout.save();
       res.status(201).json({ msg: "Workout log saved", data: newWorkout });
+    } catch (err) {
+      console.error("Error adding workout:", err); // Optional: better debugging
+      res.status(500).json({ msg: err.message });
+    }
+  },
+  
+  getWorkout: async (req, res) => {
+    try {
+      const { userId } = req.query;
+      console.log('Received userId:', userId);
+      const filter = userId ? { userId } : {};
+      const workouts = await Workout.find(filter);
+      console.log('Found workouts:', workouts);
+      res.json(workouts);
     } catch (err) {
       res.status(500).json({ msg: err.message });
     }
   },
-
- getWorkout: async (req, res) => {
-  try {
-    const { userId } = req.query;
-    console.log('Received userId:', userId);
-    const filter = userId ? { userId } : {};
-    const workouts = await Workout.find(filter);
-    console.log('Found workouts:', workouts);
-    res.json(workouts);
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-},
-
 
   updateWorkout: async (req, res) => {
     try {
@@ -215,17 +218,27 @@ updateBMI :  async function(req, res) {
       res.status(500).json({ msg: err.message });
     }
   },
+
   // -------- FOOD LOG ROUTES --------
   addFood: async (req, res) => {
     try {
       const { userId, meals } = req.body;
+  
+      if (!userId || !meals || !Array.isArray(meals) || meals.length === 0) {
+        return res.status(400).json({ msg: 'userId and meals (non-empty array) are required' });
+      }
+  
+      // Optionally validate each meal's fields here...
+  
       const newFoodLog = new FoodLog({ userId, meals });
       await newFoodLog.save();
+  
       res.status(201).json({ msg: "Food log saved", data: newFoodLog });
     } catch (err) {
       res.status(500).json({ msg: err.message });
     }
-  },
+  }
+,  
 
   getFoods: async (req, res) => {
     try {
@@ -236,7 +249,24 @@ updateBMI :  async function(req, res) {
       res.status(500).json({ msg: err.message });
     }
   }  ,
-
+  getUserWiseFoods: async function(req, res) {
+    try {
+      const { userId } = req.params;
+  
+      if (!userId) {
+        return res.status(400).json({ msg: 'Missing userId in params' });
+      }
+  
+      const logs = await FoodLog.find({ userId })
+        .sort({ date: -1 });
+  
+      res.json(logs);
+    } catch (err) {
+      console.error('Error fetching food logs:', err);
+      res.status(500).json({ msg: 'Server error' });
+    }
+  }
+,  
   updateFood: async (req, res) => {
     try {
       const { id } = req.params;

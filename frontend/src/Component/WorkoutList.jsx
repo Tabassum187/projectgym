@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-// Helpers
-
+// Helper functions
 function getStartOfWeek(date) {
   const d = new Date(date);
   const day = d.getDay();
@@ -36,13 +35,19 @@ const WorkoutList = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [searchName, setSearchName] = useState('');
   const [searchWorkoutType, setSearchWorkoutType] = useState('');
-  const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
 
+  // Get userId from localStorage
+  const userInformation = JSON.parse(localStorage.getItem('user_information'));
+  const userId = userInformation?._id;
+
+  // Fetch workout logs for the logged-in user
   useEffect(() => {
+    if (!userId) return;
+
     const fetchWorkoutLogs = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/gym/workout');
+        const res = await axios.get(`http://localhost:3001/gym/workout?userId=${userId}`);
         console.log("Workout response:", res.data);
         setWorkoutLogs(res.data || []);
       } catch (error) {
@@ -51,13 +56,14 @@ const WorkoutList = () => {
     };
 
     fetchWorkoutLogs();
-  }, []);
+  }, [userId]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Delete this workout log?')) {
       try {
         await axios.delete(`http://localhost:3001/gym/workout/${id}`);
-        const res = await axios.get('http://localhost:3001/gym/workout');
+        // Refresh list after delete
+        const res = await axios.get(`http://localhost:3001/gym/workout?userId=${userId}`);
         setWorkoutLogs(res.data || []);
       } catch (error) {
         console.error("Delete failed:", error);
@@ -96,6 +102,7 @@ const WorkoutList = () => {
 
   const handleSave = async () => {
     if (!editItem) return;
+
     const updatedData = {
       name: formData.name,
       workoutType: formData.workoutType,
@@ -104,16 +111,30 @@ const WorkoutList = () => {
       date: new Date(formData.date).toISOString()
     };
 
+    // Prevent duplicates
+    const isDuplicate = workoutLogs.some(log =>
+      log._id !== editItem &&
+      log.name === formData.name &&
+      log.workoutType === formData.workoutType &&
+      formatDate(log.date) === formatDate(formData.date)
+    );
+
+    if (isDuplicate) {
+      alert('This workout has already been logged.');
+      return;
+    }
+
     try {
       await axios.put(`http://localhost:3001/gym/workout/${editItem}`, updatedData);
       closeModal();
-      const res = await axios.get('http://localhost:3001/gym/workout');
+      const res = await axios.get(`http://localhost:3001/gym/workout?userId=${userId}`);
       setWorkoutLogs(res.data || []);
     } catch (error) {
       console.error("Update failed:", error);
     }
   };
 
+  // Filtered workout logs based on search
   const filteredLogs = workoutLogs.filter(log => {
     if (!log) return false;
     const nameMatch = log.name?.toLowerCase().includes(searchName.toLowerCase());
@@ -162,27 +183,10 @@ const WorkoutList = () => {
             <option value="HIIT">HIIT</option>
             <option value="Cardio">Cardio</option>
           </select>
-          <button
-            onClick={() => {
-              setShowCalendar(!showCalendar);
-              if (!showCalendar) setSelectedDate(new Date());
-              else setSelectedDate(null);
-            }}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: 'yellow',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            {showCalendar ? 'Hide Calendar' : 'Show Calendar'}
-          </button>
         </div>
 
         {/* Calendar */}
-        {showCalendar && selectedDate && (
+        {selectedDate && weekDays.length > 0 && (
           <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
             {weekDays.map(day => (
               <div
@@ -206,46 +210,62 @@ const WorkoutList = () => {
 
         {/* Logs Display */}
         <div style={{ display: 'grid', gap: '20px', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
-          {displayedLogs.length > 0 ? displayedLogs.map(log => {
-            return (
-              <div key={log._id} style={{
+          {displayedLogs.length > 0 ? displayedLogs.map(log => (
+            <div
+              key={log._id}
+              style={{
                 backgroundColor: '#1e1e1e',
                 padding: '15px',
                 borderRadius: '10px',
                 color: 'white'
-              }}>
-                <p><strong>Date:</strong> {formatDate(log.date)}</p>
-                <p><strong>Name:</strong> {log.name}</p>
-                <p><strong>Type:</strong> {log.workoutType}</p>
-                <p><strong>Duration:</strong> {log.duration} min</p>
-                <p><strong>Calories:</strong> {log.caloriesBurned}</p>
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                  <button onClick={() => openEditModal(log)} style={{ backgroundColor: '#ffc107', padding: '6px', borderRadius: '5px' }}>✏️</button>
-                  <button onClick={() => handleDelete(log._id)} style={{ backgroundColor: '#dc3545', padding: '6px', borderRadius: '5px', color: 'white' }}>🗑️</button>
-                </div>
+              }}
+            >
+              <p><strong>Date:</strong> {formatDate(log.date)}</p>
+              <p><strong>Name:</strong> {log.name}</p>
+              <p><strong>Type:</strong> {log.workoutType}</p>
+              <p><strong>Duration:</strong> {log.duration} min</p>
+              <p><strong>Calories:</strong> {log.caloriesBurned}</p>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => openEditModal(log)}
+                  style={{ backgroundColor: '#ffc107', padding: '6px', borderRadius: '5px' }}
+                >
+                  ✏️
+                </button>
+                <button
+                  onClick={() => handleDelete(log._id)}
+                  style={{ backgroundColor: '#dc3545', padding: '6px', borderRadius: '5px', color: 'white' }}
+                >
+                  🗑️
+                </button>
               </div>
-            );
-          }) : (
+            </div>
+          )) : (
             <p style={{ color: 'gray' }}>No workout logs available.</p>
           )}
         </div>
 
         {/* Edit Modal */}
         {showPopup && (
-          <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            zIndex: 1000
-          }}>
-            <div style={{
-              backgroundColor: '#121212',
-              padding: '30px',
-              borderRadius: '10px',
-              width: '90%',
-              maxWidth: '400px',
-              color: 'white'
-            }}>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              zIndex: 1000
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#121212',
+                padding: '30px',
+                borderRadius: '10px',
+                width: '90%',
+                maxWidth: '400px',
+                color: 'white'
+              }}
+            >
               <h3>Edit Workout</h3>
               <input
                 type="date"
@@ -292,7 +312,12 @@ const WorkoutList = () => {
               />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                 <button onClick={closeModal} style={{ padding: '8px 12px' }}>Cancel</button>
-                <button onClick={handleSave} style={{ backgroundColor: 'yellow', padding: '8px 12px', border: 'none', cursor: 'pointer' }}>Save</button>
+                <button
+                  onClick={handleSave}
+                  style={{ backgroundColor: 'yellow', padding: '8px 12px', border: 'none', cursor: 'pointer' }}
+                >
+                  Save
+                </button>
               </div>
             </div>
           </div>
