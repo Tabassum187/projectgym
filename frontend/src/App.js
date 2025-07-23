@@ -80,7 +80,7 @@ function App() {
           <Route path='/support' element={<Support />} />
           <Route path='/settings' element={<Settings />} />
           <Route path='/fp' element={<ForgetPassword />} />
-          <Route path='/reset' element={<ResetPassword />} />
+          <Route path='/reset/:token' element={<ResetPassword />} />
           <Route path='/goals' element={<Goals />} />
            <Route path='/reminder' element={<ReminderForm />} />
           <Route path="/profile" element={<Profile />} />

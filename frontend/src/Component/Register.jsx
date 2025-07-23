@@ -15,7 +15,6 @@ export default function Register() {
   let [height, setHeight] = useState("");
   let [weight, setWeight] = useState("");
   let [bmi_index, setBmiIndex] = useState("");
-  let [target_weight, setTargetWeight] = useState("");
   let [bp, setBp] = useState("");
   let [diabities, setDiabities] = useState("");
 
@@ -35,7 +34,7 @@ export default function Register() {
   let clear = () => {
     setName(""); setEmail(""); setPswd(""); setGender(""); setAge(0);
     setContact(""); setHeight(""); setWeight(""); setBmiIndex("");
-    setTargetWeight(""); setBp(""); setDiabities("");
+    setBp(""); setDiabities("");
   };
 
   let register_user = async (e) => {
@@ -44,7 +43,7 @@ export default function Register() {
       let password_regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
       let username_regex = /^[A-Za-z ]+$/;
 
-      if (!name || !email || !pswd || !gender || age <= 0 || !contact || !height || !weight || !bmi_index || !target_weight || !bp || !diabities) {
+      if (!name || !email || !pswd || !gender || age <= 0 || !contact || !height || !weight || !bmi_index || !bp || !diabities) {
         toast.error("All fields are required");
         return;
       }
@@ -61,7 +60,7 @@ export default function Register() {
 
       let response = await axios.post("http://localhost:3001/gym/user", {
         name, email, password: pswd, gender, age, contact,
-        height, weight, bmi_index, target_weight, bp, diabities
+        height, weight, bmi_index, bp, diabities
       });
 
       clear();
@@ -84,7 +83,7 @@ export default function Register() {
   return (
     <div className={styles.registerContainer}>
       <ToastContainer />
-      <h2><strong>Transform Yourself – Join Our Fitness Team 🏋️‍♀️</strong></h2>
+      <h2><strong>Your Health Matters – Register to Find Trusted Doctors 👨‍⚕️👩‍⚕️</strong></h2>
 
       <form className={styles.formGrid} onSubmit={register_user}>
         {/* Left Column */}
@@ -126,8 +125,6 @@ export default function Register() {
           <label>BMI Index</label>
           <input type="text" value={bmi_index} readOnly />
 
-          <label>Target Weight (kg)</label>
-          <input type="number" value={target_weight} onChange={(e) => setTargetWeight(e.target.value)} />
 
           <label>Blood Pressure</label>
           <div className={styles.genderOptions}>
@@ -150,7 +147,7 @@ export default function Register() {
         <div style={{ gridColumn: "1 / -1", textAlign: "center" }}>
           <button type="submit">Register Now</button>
 
-          <p style={{ marginTop: "1rem", color: "white", fontSize: "1.1rem" }}>
+          <p style={{ marginTop: "1rem", color: "#004d4d", fontSize: "1.1rem" }}>
             Already have an account?{" "}
             <Link to="/login" style={{ color: "#4caf50", textDecoration: "underline", fontSize: "1.1rem" }}>
               Login now

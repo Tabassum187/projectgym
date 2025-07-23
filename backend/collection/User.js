@@ -38,10 +38,6 @@ const user_collection = mongoose.Schema({
     type: String, // can change to Number if you strictly expect numeric BMI
     required: true
   },
-  target_weight: {
-    type: Number,
-    required: true
-  },
   bp: {
     type: String,
     required: true

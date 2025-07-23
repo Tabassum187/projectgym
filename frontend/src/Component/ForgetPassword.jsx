@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import "react-toastify/dist/ReactToastify.css";
 import { toast, ToastContainer } from "react-toastify";
-import styles from '../style/ForgetPassword.module.css'; 
-// CSS Module for dark theme
+import styles from '../style/Register.module.css'; // ✅ Reuse existing styles
 
 export default function ForgetPassword() {
   const [email, setEmail] = useState("");
@@ -19,24 +18,29 @@ export default function ForgetPassword() {
   }
 
   return (
-    <div className={styles.container}>
-      <ToastContainer />
-      <h2 className={styles.title}>🏋️‍♂️ Welcome Back</h2>
-      <h2 className={styles.title}>Forget Password</h2>
+    <div className={styles.fullPageBackground}> {/* 🌆 Fullscreen background */}
+      <div className={styles.registerContainer}> {/* 🎯 Centered card */}
+        <ToastContainer />
+        <h2>📩 Forgot Your Password?</h2>
+        <p style={{ textAlign: "center", marginBottom: "20px", color: "#004d4d" }}>
+          Enter your registered email to receive a reset link.
+        </p>
 
-      <label htmlFor="email" className={styles.label}>Email Address</label>
-      <input
-        type="email"
-        id="email"
-        name='email'
-        required
-        value={email}
-        className={styles.input}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Enter your email"
-      />
+        <form style={{ maxWidth: "500px", margin: "0 auto" }}>
+          <label>Email Address</label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+          />
 
-      <button className={styles.button} onClick={handleSubmit}>Send Reset Link</button>
+          <button type="button" onClick={handleSubmit}>
+            Send Reset Link
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

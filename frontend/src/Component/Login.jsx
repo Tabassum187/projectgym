@@ -36,7 +36,7 @@ export default function Login() {
     <div className={styles.loginContainer}>
       <ToastContainer />
       <div className={styles.loginBox}>
-        <h2 className={styles.heading}>Welcome Back 🏋️‍♂️</h2>
+        <h2 className={styles.heading}>Welcome Back! </h2>
 
         {/* Profile Icon before email */}
         <label htmlFor="email" className={styles.label}>
@@ -65,7 +65,7 @@ export default function Login() {
        <p
   style={{
     marginTop: "1rem",
-    color: "white",
+    color: "#004d4d",
     fontSize: "1.1rem",
     textAlign: "center",
     fontWeight: "500",
@@ -75,7 +75,7 @@ export default function Login() {
   <Link
     to="/reg"
     style={{
-      color: "green",
+      color: "#004d4d",
       textDecoration: "underline",
       fontSize: "1.1rem",
       fontWeight: "600",
@@ -88,7 +88,7 @@ export default function Login() {
         <p
   style={{
     marginTop: "1rem",
-    color: "white",
+    color: "#004d4d",
     fontSize: "1.1rem",
     textAlign: "center",
     fontWeight: "500",
@@ -113,8 +113,8 @@ export default function Login() {
     <button
       style={{
         padding: "5px 10px",
-        backgroundColor: " #e6d200",
-        color: "black",
+        backgroundColor: "#004d4d",
+        color: "white",
         fontSize: "1rem",
         border: "none",
         borderRadius: "5px",

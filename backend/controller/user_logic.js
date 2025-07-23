@@ -9,11 +9,17 @@ const Progress = require("../Models/Progress");
 let jwt = require("jsonwebtoken")
 
 let EmailInfo = nodemailer.createTransport({
-  service:"gmail",
-  auth:{
-    user:process.env.EMAIL,
-        pass:process.env.PASS_KEY
-  }
+  host: "smtp.gmail.com",  // <-- change this from smtp.example.com to smtp.gmail.com
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.PASS_KEY,
+  },
+  tls: {
+    // do not fail on invalid certs
+    rejectUnauthorized: false,
+  },
 })
 
 let user_function = {
@@ -30,7 +36,6 @@ let user_function = {
         height,
         weight,
         bmi_index,
-        target_weight,
         bp,
         diabities
       } = req.body;
@@ -51,14 +56,35 @@ let user_function = {
           height,
           weight,
           bmi_index,
-          target_weight,
           bp,
           diabities
         });
 
         await user_data.save();
+        let mailOptions = {
+          from: process.env.EMAIL,
+          to: email,
+          subject: "Registration Successful - FitTrackPro Hospital",
+          html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #ddd; border-radius:8px; background-color:#f4f9f9; color:#004d4d;">
+              <h1 style="color:#00796b; border-bottom:2px solid #004d4d; padding-bottom:10px;">FitTrackPro Hospital</h1>
+              <h2>Welcome, ${name}!</h2>
+              <p>Thank you for registering with <strong>FitTrackPro Hospital</strong>.</p>
+              <p>Your registration was successful. You can now <a href="https://yourwebsite.com/login" style="color:#00796b; text-decoration:none;">log in</a> and access your personalized dashboard.</p>
+              <hr style="border:none; border-top:1px solid #ddd; margin:20px 0;" />
+              <p>If you have any questions, feel free to contact our support team at <a href="mailto:support@fittrackpro.com" style="color:#00796b;">support@fittrackpro.com</a>.</p>
+              <p>Best regards,<br/>The FitTrackPro Team</p>
+            </div>
+          `,
+        };
+        
+        await EmailInfo.sendMail(mailOptions,function(e,i){
+          if (e)    {
+           console.log(e)
+          }
+        });
         return res.status(200).json({ msg: "User registered successfully" });
-      }
+        }
     } catch (error) {
       return res.status(501).json({ msg: error.message });
     }
@@ -98,7 +124,6 @@ let user_function = {
         height,
         weight,
         bmi_index,
-        target_weight,
         bp,
         diabities
       } = req.body;
@@ -114,7 +139,6 @@ let user_function = {
           height,
           weight,
           bmi_index,
-          target_weight,
           bp,
           diabities
         };
@@ -163,200 +187,58 @@ updateBMI :  async function(req, res) {
     }
   },
 
-  // -------- WORKOUT ROUTES --------
-  addWorkout: async (req, res) => {
+ forgetpassword: async function(req, res) {
     try {
-      // ✅ Include `date` in the destructuring
-      const { userId, name, workoutType, duration, caloriesBurned, date } = req.body;
+      let { email } = req.body;
+      let email_check = await user.findOne({ email });
+      if (!email_check) {
+        return res.status(404).json({ msg: "Email is invalid / User Not Found" });
+      }
   
-      const newWorkout = new Workout({
-        userId,
-        name,
-        workoutType,
-        duration,
-        caloriesBurned,
-        date, // ✅ Add this line
+      // JWT sign with secret from env for better security
+      let token = jwt.sign({ id: email_check._id }, process.env.JWT_KEY || "hunain123", {
+        expiresIn: "1h"
       });
   
-      await newWorkout.save();
-      res.status(201).json({ msg: "Workout log saved", data: newWorkout });
-    } catch (err) {
-      console.error("Error adding workout:", err); // Optional: better debugging
-      res.status(500).json({ msg: err.message });
-    }
-  },
+      let link = `http://localhost:3000/reset/${token}`;
   
-  getWorkout: async (req, res) => {
-    try {
-      const { userId } = req.query;
-      console.log('Received userId:', userId);
-      const filter = userId ? { userId } : {};
-      const workouts = await Workout.find(filter);
-      console.log('Found workouts:', workouts);
-      res.json(workouts);
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  },
-
-  updateWorkout: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const updatedWorkout = await Workout.findByIdAndUpdate(id, req.body, { new: true });
-      res.json({ msg: "Workout log updated", data: updatedWorkout });
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  },
-
-  deleteWorkout: async (req, res) => {
-    try {
-      const { id } = req.params;
-      await Workout.findByIdAndDelete(id);
-      res.json({ msg: "Workout log deleted" });
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  },
-
-  // -------- FOOD LOG ROUTES --------
-  addFood: async (req, res) => {
-    try {
-      const { userId, meals } = req.body;
+      let email_body = {
+        to: email,
+        from: process.env.EMAIL,
+        subject: "Password Reset Request - FitTrackPro Hospital",
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #ddd; border-radius:8px; background-color:#f4f9f9; color:#004d4d;">
+            <h2 style="color:#00796b;">Hello ${email_check.name},</h2>
+            <p>We received a request to reset your password for your FitTrackPro Hospital account.</p>
+            <p>Please click the link below to set a new password:</p>
+            <p style="text-align:center; margin: 30px 0;">
+              <a href="${link}" style="background-color:#00796b; color:white; padding:12px 25px; border-radius:5px; text-decoration:none; font-weight:bold;">
+                Reset Password
+              </a>
+            </p>
+            <p>If you did not request a password reset, please ignore this email or contact our support.</p>
+            <hr style="border:none; border-top:1px solid #ddd; margin:20px 0;" />
+            <p>Thank you,<br/>The FitTrackPro Team</p>
+          </div>
+        `,
+      };
+      
   
-      if (!userId || !meals || !Array.isArray(meals) || meals.length === 0) {
-        return res.status(400).json({ msg: 'userId and meals (non-empty array) are required' });
-      }
-  
-      // Optionally validate each meal's fields here...
-  
-      const newFoodLog = new FoodLog({ userId, meals });
-      await newFoodLog.save();
-  
-      res.status(201).json({ msg: "Food log saved", data: newFoodLog });
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  }
-,  
-
-  getFoods: async (req, res) => {
-    try {
-      const { userId } = req.query;
-      const foodLogs = await FoodLog.find({ userId });
-      res.json(foodLogs);
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  }  ,
-  getUserWiseFoods: async function(req, res) {
-    try {
-      const { userId } = req.params;
-  
-      if (!userId) {
-        return res.status(400).json({ msg: 'Missing userId in params' });
-      }
-  
-      const logs = await FoodLog.find({ userId })
-        .sort({ date: -1 });
-  
-      res.json(logs);
-    } catch (err) {
-      console.error('Error fetching food logs:', err);
-      res.status(500).json({ msg: 'Server error' });
-    }
-  }
-,  
-  updateFood: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const updatedFood = await FoodLog.findByIdAndUpdate(id, req.body, { new: true });
-      res.json({ msg: "Food log updated", data: updatedFood });
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  },
-
-  deleteFood: async (req, res) => {
-    try {
-      const { id } = req.params;
-      await FoodLog.findByIdAndDelete(id);
-      res.json({ msg: "Food log deleted" });
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  },
-
-  // -------- PROGRESS ROUTES --------
-   addProgress : async (req, res) => {
-    try {
-      const newProgress = new Progress(req.body);
-      await newProgress.save(); // No callback needed
-      res.status(201).json(newProgress);
-    } catch (err) {
-      console.error("Add progress error:", err);
-      res.status(500).json({ msg: err.message });
-    }
-  },
-
-  getProgress: async (req, res) => {
-    try {
-      const { userId } = req.query;
-      const progress = await Progress.find({ userId });
-      res.json(progress);
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  },
-
-  updateProgress: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const updatedProgress = await Progress.findByIdAndUpdate(id, req.body, { new: true });
-      res.json({ msg: "Progress updated", data: updatedProgress });
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  },
-
-  deleteProgress: async (req, res) => {
-    try {
-      const { id } = req.params;
-      await Progress.findByIdAndDelete(id);
-      res.json({ msg: "Progress deleted" });
-    } catch (err) {
-      res.status(500).json({ msg: err.message });
-    }
-  },forgetpassword: async function(req,res){
-    try {
-      let {email}= req.body;
-      let email_check = await user.findOne({email})
-      if(!email_check){
-        return res.status(404).json({msg:"Email is invalid / User Not Found"})
-      }
-      let token = jwt.sign({id: email_check.id},"hunain123",
-      {expiresIn:"1h"})
-      let link = "http://localhost:3000/reset/" + token;
-
-      let email_body ={
-        to : email,
-        from : process.env.EMAIL,
-        subject :"Reset Password",
-        html : `<h3>Hi ${email_check.name}</h3> <p>Hope You're Doing Well, Here Is Your Reset Password Link,
-        Please Click on The given Link To Reset your Password</p> ${link}`
-      }
-      EmailInfo.sendMail(email_body,function(er,i){
-        if (e) {
-          console.log(e.message)
+      EmailInfo.sendMail(email_body, function (err, info) {
+        if (err) {
+          console.log('Email send error:', err.message);
+          return res.status(500).json({ msg: "Failed to send reset email" });
         } else {
-          console.log("Email Sent Successfully"+i)
+          console.log("Email Sent Successfully: " + info.response);
+          return res.status(201).json({ msg: "Password Reset Link Has Been Sent" });
         }
-      })
-      res.status(201).json({msg: "Password Reset Link Has Been Sent"});
+      });
+  
     } catch (error) {
-      res.status(501).json({msg:error.message});
+      return res.status(501).json({ msg: error.message });
     }
   },
+  
   
   reset_pswd : async function(req,res){
     try {
@@ -367,7 +249,7 @@ updateBMI :  async function(req, res) {
         if (!token_decode) {
             res.status(404).json({msg : "Something Went Wrong"})                  
         }
-        let encpswd = bcrypt.hashSync(password,13);
+        let encpswd = b.hashSync(password,13);
         await user.findByIdAndUpdate(token_decode.id,{password:encpswd})
       res.status(200).json({msg : "Password Reset Successfully"})        
 
