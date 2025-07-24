@@ -8,10 +8,11 @@ require('dotenv').config();
 
      // adjust path as per your project
      const progressRoutes = require('./Route/progress_route');
-const foodRoutes = require('./Route/foodRoutes');
-const reminderRoutes = require('./Route/reminderRoutes');
-const workoutRoute = require('./Route/workout_route'); 
-const stepRoutes = require('./Route/Step');
+     const foodRoutes = require('./Route/foodRoutes');
+     const reminderRoutes = require('./Route/reminderRoutes');
+     const workoutRoute = require('./Route/workout_route');
+     const stepRoutes = require('./Route/Step');
+     const openAIRoutes = require('./Route/Openai'); // ✅ AI route added
 
 
 
@@ -35,19 +36,22 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
+// Routes
+
+
+
+// ✅ Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Routes
-
+// ✅ Route Usage
 app.use('/gym/progress/', progressRoutes);
 app.use('/gym', foodRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/reminders', reminderRoutes);
-app.use('/gym', workoutRoute); 
-app.use('/api',stepRoutes); 
-
-
+app.use('/gym', workoutRoute);
+app.use('/api', stepRoutes);
+app.use('/api/openai/', openAIRoutes); 
 
 // ✅ MongoDB connection
 const uri = process.env.MONGO_URI;
